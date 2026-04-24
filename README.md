@@ -12,7 +12,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Financial goals with progress tracking
 - Monthly dashboard with summary cards and charts
 - Premium dark UI with hover interactions and responsive layout
-- Docker Compose environment with MySQL, API and Web services
+- Docker Compose environment with PostgreSQL, API and Web services
 - Unit and integration tests for the API
 - GitHub Actions CI for build and test validation
 
@@ -22,7 +22,7 @@ The project was built as a portfolio-grade application, with a typed React front
 | --- | --- |
 | Frontend | React, Vite, TypeScript, React Router, React Query, Zustand, Recharts, Tailwind CSS |
 | Backend | Node.js, Express, TypeScript, TypeORM, Zod, JWT, bcrypt |
-| Database | MySQL 8 |
+| Database | PostgreSQL |
 | Testing | Jest, ts-jest, Supertest |
 | Infrastructure | Docker, Docker Compose, GitHub Actions |
 
@@ -45,7 +45,7 @@ financeflow/
         services/         # Axios API client
         store/            # Zustand auth store
         types/            # Shared frontend types
-  docker-compose.yml      # Local MySQL, API and Web orchestration
+  docker-compose.yml      # Local PostgreSQL, API and Web orchestration
 ```
 
 ## Core Features
@@ -132,7 +132,7 @@ Services:
 Web:    http://localhost:5173
 API:    http://localhost:3333
 Health: http://localhost:3333/health
-MySQL:  localhost:3307
+Postgres: localhost:5433
 ```
 
 ### Run Locally
@@ -143,10 +143,10 @@ Install dependencies:
 npm install
 ```
 
-Start MySQL:
+Start PostgreSQL:
 
 ```bash
-docker compose up mysql
+docker compose up postgres
 ```
 
 Create environment files using `.env.example` as a reference:
@@ -181,10 +181,12 @@ JWT_SECRET=your_secret
 JWT_EXPIRES_IN=7d
 WEB_URL=http://localhost:5173
 DB_HOST=localhost
-DB_PORT=3307
+DB_PORT=5433
 DB_USER=financeflow
 DB_PASS=financeflow123
 DB_NAME=financeflow
+DATABASE_URL=
+DB_SSL=false
 ```
 
 Web variables:
@@ -193,7 +195,7 @@ Web variables:
 VITE_API_URL=http://localhost:3333/api
 ```
 
-The API accepts both local `DB_*` variables and Railway MySQL variables (`MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`).
+The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL.
 
 ## Scripts
 
@@ -248,22 +250,20 @@ Deployment is configured as a manual workflow so it can be enabled safely after 
 Recommended production setup:
 
 ```txt
-API + MySQL: Railway
+API:         Render
+Database:    PostgreSQL on Render, Neon or Supabase
 Web:         Vercel
 ```
 
-### Railway API
+### Render API
 
-Create a Railway project with two services:
+Create a Render Web Service connected to this GitHub repository.
 
-- MySQL database
-- API service connected to this GitHub repository
-
-For the API service, use:
+Recommended API settings:
 
 ```txt
 Root Directory: apps/api
-Start Command: npm start
+Environment:    Docker
 Health Check:  /health
 ```
 
@@ -274,9 +274,11 @@ NODE_ENV=production
 JWT_SECRET=<strong-secret>
 JWT_EXPIRES_IN=7d
 WEB_URL=https://your-vercel-domain.vercel.app
+DATABASE_URL=<your-postgres-connection-string>
+DB_SSL=true
 ```
 
-Railway automatically provides the MySQL variables when the database service is attached to the same project. The API can read the Railway `MYSQL*` variables directly.
+If you use Render PostgreSQL in the same workspace, use the internal database URL when available. For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`.
 
 ### Vercel Web
 
@@ -291,7 +293,7 @@ Output Directory: dist
 Required Web variable:
 
 ```txt
-VITE_API_URL=https://your-railway-api-domain.up.railway.app/api
+VITE_API_URL=https://your-render-api-domain.onrender.com/api
 ```
 
 The web app includes `apps/web/vercel.json` to redirect client-side routes back to `index.html`, which keeps React Router working on page refresh.

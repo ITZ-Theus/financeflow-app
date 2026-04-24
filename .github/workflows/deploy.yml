@@ -5,21 +5,12 @@ on:
 
 jobs:
   deploy-api:
-    name: Deploy API to Railway
+    name: Deploy API to Render
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        working-directory: apps/api
-        run: railway up --service financeflow-api
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Trigger Render deploy hook
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
 
   deploy-web:
     name: Deploy Web to Vercel

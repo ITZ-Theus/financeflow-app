@@ -30,6 +30,8 @@ const jwtSecret = getRequiredProductionValue(
   process.env.JWT_SECRET
 ) || 'sua_chave_secreta_super_segura_aqui'
 
+const databaseUrl = process.env.DATABASE_URL
+
 export const env = {
   port: getNumber(process.env.PORT, 3333),
   nodeEnv,
@@ -43,10 +45,12 @@ export const env = {
   },
 
   db: {
-    host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
-    port: getNumber(process.env.DB_PORT || process.env.MYSQLPORT, 3306),
-    user: process.env.DB_USER || process.env.MYSQLUSER || 'financeflow',
-    password: process.env.DB_PASS || process.env.MYSQLPASSWORD || 'financeflow123',
-    database: process.env.DB_NAME || process.env.MYSQLDATABASE || 'financeflow',
+    url: databaseUrl,
+    ssl: process.env.DB_SSL === 'true',
+    host: process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: getNumber(process.env.DB_PORT || process.env.POSTGRES_PORT, 5432),
+    user: process.env.DB_USER || process.env.POSTGRES_USER || 'financeflow',
+    password: process.env.DB_PASS || process.env.POSTGRES_PASSWORD || 'financeflow123',
+    database: process.env.DB_NAME || process.env.POSTGRES_DB || 'financeflow',
   },
 }

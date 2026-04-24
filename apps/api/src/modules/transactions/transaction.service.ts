@@ -12,6 +12,23 @@ interface CreateTransactionDTO {
   categoryId?: string
 }
 
+function getMonthRange(query: any) {
+  const month = Number(query.month)
+  const year = Number(query.year)
+
+  if (!month || !year || month < 1 || month > 12) {
+    return null
+  }
+
+  const start = new Date(Date.UTC(year, month - 1, 1))
+  const end = new Date(Date.UTC(year, month, 1))
+
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  }
+}
+
 export class TransactionService {
   private repo = AppDataSource.getRepository(Transaction)
 
@@ -23,10 +40,9 @@ export class TransactionService {
 
     if (query.type)       qb.andWhere('t.type = :type', { type: query.type })
     if (query.categoryId) qb.andWhere('t.categoryId = :categoryId', { categoryId: query.categoryId })
-    if (query.month && query.year) {
-      qb.andWhere('MONTH(t.date) = :month AND YEAR(t.date) = :year', {
-        month: query.month, year: query.year,
-      })
+    const range = getMonthRange(query)
+    if (range) {
+      qb.andWhere('t.date >= :startDate AND t.date < :endDate', range)
     }
 
     qb.orderBy('t.date', 'DESC').skip((page - 1) * limit).take(limit)
@@ -36,10 +52,9 @@ export class TransactionService {
 
   async summary(userId: string, query: any) {
     const qb = this.repo.createQueryBuilder('t').where('t.userId = :userId', { userId })
-    if (query.month && query.year) {
-      qb.andWhere('MONTH(t.date) = :month AND YEAR(t.date) = :year', {
-        month: query.month, year: query.year,
-      })
+    const range = getMonthRange(query)
+    if (range) {
+      qb.andWhere('t.date >= :startDate AND t.date < :endDate', range)
     }
     const transactions = await qb.getMany()
     const income  = transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)

@@ -1,33 +1,35 @@
 services:
-  mysql:
-    image: mysql:8.0
+  postgres:
+    image: postgres:16-alpine
     container_name: financeflow_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: financeflow
-      MYSQL_USER: financeflow
-      MYSQL_PASSWORD: financeflow123
+      POSTGRES_DB: financeflow
+      POSTGRES_USER: financeflow
+      POSTGRES_PASSWORD: financeflow123
     ports:
-      - '3307:3306'
+      - '5433:5432'
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - financeflow_network
 
   api:
-    build: ./apps/api
+    build:
+      context: ./apps/api
+      target: development
     container_name: financeflow_api
     restart: always
     depends_on:
-      - mysql
+      - postgres
     environment:
       PORT: 3333
       NODE_ENV: development
       JWT_SECRET: sua_chave_secreta_super_segura_aqui
       JWT_EXPIRES_IN: 7d
-      DB_HOST: mysql
-      DB_PORT: 3306
+      WEB_URL: http://localhost:5173
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_USER: financeflow
       DB_PASS: financeflow123
       DB_NAME: financeflow
@@ -56,7 +58,7 @@ services:
       - financeflow_network
 
 volumes:
-  mysql_data:
+  postgres_data:
 
 networks:
   financeflow_network:
