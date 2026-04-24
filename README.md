@@ -179,6 +179,7 @@ PORT=3333
 NODE_ENV=development
 JWT_SECRET=your_secret
 JWT_EXPIRES_IN=7d
+WEB_URL=http://localhost:5173
 DB_HOST=localhost
 DB_PORT=3307
 DB_USER=financeflow
@@ -191,6 +192,8 @@ Web variables:
 ```txt
 VITE_API_URL=http://localhost:3333/api
 ```
+
+The API accepts both local `DB_*` variables and Railway MySQL variables (`MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`).
 
 ## Scripts
 
@@ -239,6 +242,59 @@ GitHub Actions validates the project on pushes and pull requests to `main` and `
 - run API tests
 
 Deployment is configured as a manual workflow so it can be enabled safely after production services and secrets are available.
+
+## Deployment
+
+Recommended production setup:
+
+```txt
+API + MySQL: Railway
+Web:         Vercel
+```
+
+### Railway API
+
+Create a Railway project with two services:
+
+- MySQL database
+- API service connected to this GitHub repository
+
+For the API service, use:
+
+```txt
+Root Directory: apps/api
+Start Command: npm start
+Health Check:  /health
+```
+
+Required API variables:
+
+```txt
+NODE_ENV=production
+JWT_SECRET=<strong-secret>
+JWT_EXPIRES_IN=7d
+WEB_URL=https://your-vercel-domain.vercel.app
+```
+
+Railway automatically provides the MySQL variables when the database service is attached to the same project. The API can read the Railway `MYSQL*` variables directly.
+
+### Vercel Web
+
+Create a Vercel project connected to this repository and set:
+
+```txt
+Root Directory: apps/web
+Build Command: npm run build
+Output Directory: dist
+```
+
+Required Web variable:
+
+```txt
+VITE_API_URL=https://your-railway-api-domain.up.railway.app/api
+```
+
+The web app includes `apps/web/vercel.json` to redirect client-side routes back to `index.html`, which keeps React Router working on page refresh.
 
 ## Roadmap
 

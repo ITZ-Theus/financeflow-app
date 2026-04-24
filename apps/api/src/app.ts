@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import 'express-async-errors'
 import express from 'express'
 import cors from 'cors'
+import { env } from './config/env'
 import { errorHandler } from './shared/errors/errorHandler'
 import { authRoutes } from './modules/auth/auth.routes'
 import { transactionRoutes } from './modules/transactions/transaction.routes'
@@ -11,7 +12,17 @@ import { goalRoutes } from './modules/goals/goal.routes'
 export function createApp() {
   const app = express()
 
-  app.use(cors())
+  app.use(cors({
+    origin(origin, callback) {
+      if (!origin || !env.corsOrigins.length || env.corsOrigins.includes(origin)) {
+        callback(null, true)
+        return
+      }
+
+      callback(null, false)
+    },
+    credentials: true,
+  }))
   app.use(express.json())
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }))
