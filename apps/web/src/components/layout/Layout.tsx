@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, ArrowLeftRight, Tag, Target, ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import { BrandMark } from '../ui/BrandMark'
 
 export function Layout() {
   const [collapsed, setCollapsed] = useState(false)
@@ -24,7 +25,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="app-sidebar" style={{ width: collapsed ? 68 : 240 }}>
         <div style={{ padding: collapsed ? '20px 0' : '20px 20px', display: 'flex', alignItems: 'center', gap: 10, justifyContent: collapsed ? 'center' : 'flex-start', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }}>💰</div>
+          <BrandMark size="sm" />
           {!collapsed && <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 16, background: 'linear-gradient(135deg, #fff, var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FinanceFlow</span>}
         </div>
         <nav style={{ flex: 1, padding: '8px 8px' }}>

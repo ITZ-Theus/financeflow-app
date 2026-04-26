@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { BrandMark } from '../components/ui/BrandMark'
 
 export function Login() {
   const [email, setEmail]       = useState('')
@@ -29,7 +30,7 @@ export function Login() {
       <div style={{ width: '100%', maxWidth: 400 }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px' }}>💰</div>
+          <BrandMark />
           <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 800, background: 'linear-gradient(135deg, #fff, var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>FinanceFlow</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 6 }}>Gerencie suas finanças com estilo</p>
         </div>
