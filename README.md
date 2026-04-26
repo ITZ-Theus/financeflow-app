@@ -4,6 +4,11 @@ FinanceFlow is a full stack personal finance management application focused on c
 
 The project was built as a portfolio-grade application, with a typed React frontend, a modular Node.js API, Docker-based local infrastructure and automated backend tests.
 
+## Live Demo
+
+- Web app: https://financeflow-app-eight.vercel.app
+- API health check: https://financeflow-api-q5ax.onrender.com/health
+
 ## Highlights
 
 - JWT authentication with protected API routes
@@ -90,7 +95,8 @@ financeflow/
 Base URL:
 
 ```txt
-http://localhost:3333/api
+Production: https://financeflow-api-q5ax.onrender.com/api
+Local:      http://localhost:3333/api
 ```
 
 | Method | Route | Description |
@@ -273,12 +279,12 @@ Required API variables:
 NODE_ENV=production
 JWT_SECRET=<strong-secret>
 JWT_EXPIRES_IN=7d
-WEB_URL=https://your-vercel-domain.vercel.app
+WEB_URL=https://financeflow-app-eight.vercel.app
 DATABASE_URL=<your-postgres-connection-string>
 DB_SSL=true
 ```
 
-If you use Render PostgreSQL in the same workspace, use the internal database URL when available. For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`.
+For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`. Keep `WEB_URL` without a trailing slash to match browser origins exactly.
 
 ### Vercel Web
 
@@ -293,7 +299,7 @@ Output Directory: dist
 Required Web variable:
 
 ```txt
-VITE_API_URL=https://your-render-api-domain.onrender.com/api
+VITE_API_URL=https://financeflow-api-q5ax.onrender.com/api
 ```
 
 The web app includes `apps/web/vercel.json` to redirect client-side routes back to `index.html`, which keeps React Router working on page refresh.
@@ -306,7 +312,7 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 - Add E2E tests for the main user journey
 - Add CSV export for transactions
 - Add recurring transactions and category budgets
-- Deploy the API and Web app to public production URLs
+- Add observability and production error tracking
 
 ## Author
 

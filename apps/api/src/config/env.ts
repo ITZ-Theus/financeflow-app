@@ -18,10 +18,14 @@ function getNumber(value: string | undefined, fallback: number): number {
   return Number.isNaN(parsed) ? fallback : parsed
 }
 
+function normalizeOrigin(origin: string): string {
+  return origin.trim().replace(/\/+$/, '')
+}
+
 function getOrigins(value?: string): string[] {
   return (value || '')
     .split(',')
-    .map((origin) => origin.trim())
+    .map(normalizeOrigin)
     .filter(Boolean)
 }
 
