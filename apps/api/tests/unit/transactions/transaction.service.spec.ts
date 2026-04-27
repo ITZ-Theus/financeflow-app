@@ -128,6 +128,7 @@ describe('TransactionService', () => {
       ]
 
       const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(transactions),
@@ -139,6 +140,9 @@ describe('TransactionService', () => {
       expect(result.income).toBe(7000)
       expect(result.expense).toBe(2300)
       expect(result.balance).toBe(4700)
+      expect(result.expensesByCategory).toEqual([
+        { categoryId: null, name: 'Sem categoria', color: '#64748b', value: 2300 },
+      ])
     })
 
     it('deve retornar saldo negativo quando despesas superam receitas', async () => {
@@ -148,6 +152,7 @@ describe('TransactionService', () => {
       ]
 
       const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(transactions),
@@ -161,6 +166,7 @@ describe('TransactionService', () => {
 
     it('deve retornar zeros quando não há transações', async () => {
       const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue([]),
@@ -169,7 +175,45 @@ describe('TransactionService', () => {
 
       const result = await service.summary(USER_ID, {})
 
-      expect(result).toEqual({ income: 0, expense: 0, balance: 0 })
+      expect(result).toEqual({ income: 0, expense: 0, balance: 0, expensesByCategory: [] })
+    })
+
+    it('deve agrupar despesas por categoria para a dashboard', async () => {
+      const transactions = [
+        makeTransaction({
+          type: 'expense',
+          amount: 100,
+          categoryId: 'cat-health',
+          category: { id: 'cat-health', name: 'Saude', color: '#10b981' } as any,
+        }),
+        makeTransaction({
+          type: 'expense',
+          amount: 250,
+          categoryId: 'cat-health',
+          category: { id: 'cat-health', name: 'Saude', color: '#10b981' } as any,
+        }),
+        makeTransaction({
+          type: 'expense',
+          amount: 80,
+          categoryId: 'cat-food',
+          category: { id: 'cat-food', name: 'Alimentacao', color: '#f59e0b' } as any,
+        }),
+      ]
+
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(transactions),
+      }
+      repo.createQueryBuilder.mockReturnValue(qb)
+
+      const result = await service.summary(USER_ID, {})
+
+      expect(result.expensesByCategory).toEqual([
+        { categoryId: 'cat-health', name: 'Saude', color: '#10b981', value: 350 },
+        { categoryId: 'cat-food', name: 'Alimentacao', color: '#f59e0b', value: 80 },
+      ])
     })
   })
 

@@ -51,15 +51,38 @@ export class TransactionService {
   }
 
   async summary(userId: string, query: any) {
-    const qb = this.repo.createQueryBuilder('t').where('t.userId = :userId', { userId })
+    const qb = this.repo.createQueryBuilder('t')
+      .leftJoinAndSelect('t.category', 'category')
+      .where('t.userId = :userId', { userId })
+
     const range = getMonthRange(query)
     if (range) {
       qb.andWhere('t.date >= :startDate AND t.date < :endDate', range)
     }
+
     const transactions = await qb.getMany()
     const income  = transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)
     const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-    return { income, expense, balance: income - expense }
+    const expensesByCategory = Array.from(
+      transactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, t) => {
+          const key = t.categoryId || 'uncategorized'
+          const current = acc.get(key) || {
+            categoryId: t.categoryId || null,
+            name: t.category?.name || 'Sem categoria',
+            color: t.category?.color || '#64748b',
+            value: 0,
+          }
+
+          current.value += Number(t.amount)
+          acc.set(key, current)
+          return acc
+        }, new Map<string, { categoryId: string | null; name: string; color: string; value: number }>())
+        .values()
+    )
+
+    return { income, expense, balance: income - expense, expensesByCategory }
   }
 
   async create(userId: string, data: CreateTransactionDTO): Promise<Transaction> {

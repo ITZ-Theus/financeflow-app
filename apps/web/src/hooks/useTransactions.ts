@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { api } from '../services/api'
+import { toast } from '../store/toastStore'
+import { getApiErrorMessage } from '../utils/apiError'
 import type { PaginatedResult, Summary, Transaction, TransactionType } from '../types'
 
 export interface TransactionFilters {
@@ -41,7 +43,16 @@ export function useCreateTransaction() {
       const { data } = await api.post<Transaction>('/transactions', body)
       return data
     },
-    { onSuccess: () => { qc.invalidateQueries('transactions'); qc.invalidateQueries('summary') } }
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('transactions')
+        qc.invalidateQueries('summary')
+        toast.success('Transação criada', 'Seu fluxo financeiro foi atualizado.')
+      },
+      onError: (error) => {
+        toast.error('Erro ao criar transação', getApiErrorMessage(error))
+      },
+    }
   )
 }
 
@@ -49,6 +60,15 @@ export function useDeleteTransaction() {
   const qc = useQueryClient()
   return useMutation(
     async (id: string) => { await api.delete(`/transactions/${id}`) },
-    { onSuccess: () => { qc.invalidateQueries('transactions'); qc.invalidateQueries('summary') } }
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('transactions')
+        qc.invalidateQueries('summary')
+        toast.success('Transação removida', 'O saldo foi recalculado automaticamente.')
+      },
+      onError: (error) => {
+        toast.error('Erro ao remover transação', getApiErrorMessage(error))
+      },
+    }
   )
 }

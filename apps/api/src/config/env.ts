@@ -51,6 +51,7 @@ export const env = {
   db: {
     url: databaseUrl,
     ssl: process.env.DB_SSL === 'true',
+    migrationsRun: process.env.DB_MIGRATIONS_RUN === 'true' || isProduction,
     host: process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
     port: getNumber(process.env.DB_PORT || process.env.POSTGRES_PORT, 5432),
     user: process.env.DB_USER || process.env.POSTGRES_USER || 'financeflow',

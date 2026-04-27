@@ -165,6 +165,109 @@ h1, h2, h3, h4, h5, h6 {
   width: 56px;
 }
 
+.toast-viewport {
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  position: fixed;
+  right: 24px;
+  width: min(380px, calc(100vw - 32px));
+  z-index: 80;
+}
+
+.toast-card {
+  align-items: flex-start;
+  animation: toastIn 0.24s ease;
+  background:
+    linear-gradient(145deg, rgba(16, 24, 39, 0.98), rgba(8, 13, 24, 0.96)),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.08), transparent);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 34px 1fr 28px;
+  min-height: 72px;
+  overflow: hidden;
+  padding: 14px;
+  pointer-events: auto;
+  position: relative;
+}
+
+.toast-card::before {
+  bottom: 0;
+  content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 3px;
+}
+
+.toast-card[data-type='success']::before { background: var(--green); }
+.toast-card[data-type='error']::before { background: var(--red); }
+.toast-card[data-type='info']::before { background: var(--accent); }
+
+.toast-card__icon {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.toast-card[data-type='success'] .toast-card__icon {
+  background: var(--green-glow);
+  color: var(--green);
+}
+
+.toast-card[data-type='error'] .toast-card__icon {
+  background: var(--red-glow);
+  color: var(--red);
+}
+
+.toast-card[data-type='info'] .toast-card__icon {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.toast-card__content strong {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  margin-top: 1px;
+}
+
+.toast-card__content span {
+  color: var(--text-secondary);
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.toast-card__close {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease;
+  width: 28px;
+}
+
+.toast-card__close:hover {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-primary);
+}
+
 .animate-in {
   animation: fadeIn 0.32s ease;
 }
@@ -172,6 +275,11 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 select.input option {

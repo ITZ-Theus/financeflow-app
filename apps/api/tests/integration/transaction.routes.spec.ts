@@ -9,6 +9,8 @@ jest.mock('../../src/config/database', () => ({
   AppDataSource: { getRepository: jest.fn() },
 }))
 
+import { AppDataSource } from '../../src/config/database'
+
 const app = createApp()
 const MockedService = TransactionService as jest.MockedClass<typeof TransactionService>
 
@@ -18,7 +20,12 @@ function makeToken(userId = 'user-uuid-1') {
 }
 
 describe('Transaction Routes - /api/transactions', () => {
-  beforeEach(() => MockedService.mockClear())
+  beforeEach(() => {
+    MockedService.mockClear()
+    ;(AppDataSource.getRepository as jest.Mock).mockReturnValue({
+      findOne: jest.fn().mockResolvedValue({ id: 'user-uuid-1' }),
+    })
+  })
 
   describe('GET /api/transactions', () => {
     it('deve retornar 401 sem token', async () => {
@@ -46,6 +53,7 @@ describe('Transaction Routes - /api/transactions', () => {
     it('deve retornar resumo financeiro', async () => {
       MockedService.prototype.summary.mockResolvedValue({
         income: 7000, expense: 2300, balance: 4700,
+        expensesByCategory: [],
       })
 
       const res = await request(app)

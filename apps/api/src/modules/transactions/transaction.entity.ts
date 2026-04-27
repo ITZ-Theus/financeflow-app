@@ -23,10 +23,10 @@ export class Transaction {
   date: string
 
   @Column({ nullable: true })
-  description: string
+  description: string | null
 
   @Column({ nullable: true })
-  categoryId: string
+  categoryId: string | null
 
   @Column()
   userId: string
@@ -35,9 +35,9 @@ export class Transaction {
   @JoinColumn({ name: 'userId' })
   user: User
 
-  @ManyToOne(() => Category, { nullable: true, eager: false })
+  @ManyToOne(() => Category, { nullable: true, eager: false, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
-  category: Category
+  category: Category | null
 
   @CreateDateColumn()
   createdAt: Date

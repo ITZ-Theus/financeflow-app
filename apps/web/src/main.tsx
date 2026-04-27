@@ -10,6 +10,7 @@ import { Transactions } from './pages/Transactions'
 import { Categories } from './pages/Categories'
 import { Goals } from './pages/Goals'
 import { Layout } from './components/layout/Layout'
+import { Toasts } from './components/ui/Toasts'
 import { useAuthStore } from './store/authStore'
 
 const queryClient = new QueryClient({
@@ -24,7 +25,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/login"    element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -37,6 +38,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toasts />
     </QueryClientProvider>
   </React.StrictMode>
 )

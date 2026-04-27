@@ -18,6 +18,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Monthly dashboard with summary cards and charts
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
+- TypeORM migrations for versioned database schema changes
 - Unit and integration tests for the API
 - GitHub Actions CI for build and test validation
 
@@ -193,6 +194,7 @@ DB_PASS=financeflow123
 DB_NAME=financeflow
 DATABASE_URL=
 DB_SSL=false
+DB_MIGRATIONS_RUN=false
 ```
 
 Web variables:
@@ -201,7 +203,7 @@ Web variables:
 VITE_API_URL=http://localhost:3333/api
 ```
 
-The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL.
+The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup.
 
 ## Scripts
 
@@ -212,6 +214,7 @@ npm run dev:api       # Start the API in development mode
 npm run dev:web       # Start the Web app in development mode
 npm run build:api     # Compile the API
 npm run build:web     # Build the frontend
+npm run migration:run # Run pending API database migrations
 npm test              # Run API tests
 ```
 
@@ -221,7 +224,23 @@ API-specific scripts:
 npm run test:unit --workspace=apps/api
 npm run test:integration --workspace=apps/api
 npm run test:coverage --workspace=apps/api
+npm run migration:show --workspace=apps/api
+npm run migration:revert --workspace=apps/api
 ```
+
+## Database Migrations
+
+The API uses TypeORM migrations instead of automatic schema synchronization. This keeps database changes versioned and safer for production deploys.
+
+Local Docker sets `DB_MIGRATIONS_RUN=true`, so pending migrations run when the API starts. For manual usage:
+
+```bash
+npm run migration:run
+npm run migration:show
+npm run migration:revert
+```
+
+Production should also run migrations before serving traffic. The API enables startup migrations automatically when `NODE_ENV=production`.
 
 ## Testing
 
@@ -282,6 +301,7 @@ JWT_EXPIRES_IN=7d
 WEB_URL=https://financeflow-app-eight.vercel.app
 DATABASE_URL=<your-postgres-connection-string>
 DB_SSL=true
+DB_MIGRATIONS_RUN=true
 ```
 
 For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`. Keep `WEB_URL` without a trailing slash to match browser origins exactly.
@@ -306,7 +326,6 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 
 ## Roadmap
 
-- Replace TypeORM `synchronize` with production-grade migrations
 - Add seed data and a demo account for recruiters
 - Add frontend tests with React Testing Library
 - Add E2E tests for the main user journey

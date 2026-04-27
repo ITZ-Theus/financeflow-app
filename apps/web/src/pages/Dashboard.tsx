@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ArrowUpRight, DollarSign, Plus, TrendingDown, TrendingUp } from 'lucide-react'
-import { Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useSummary, useTransactions } from '../hooks/useTransactions'
-import { useCategories } from '../hooks/useCategories'
-import { formatCurrency, formatDate } from '../utils/formatters'
+import { formatCompactCurrency, formatCurrency, formatDate } from '../utils/formatters'
 
 const COLORS = ['#2dd4bf', '#f43f5e', '#a3e635', '#f59e0b', '#38bdf8', '#e879f9']
 
@@ -49,22 +48,12 @@ export function Dashboard() {
   const [year] = useState(now.getFullYear())
 
   const { data: summary } = useSummary({ month, year })
-  const { data: transactions } = useTransactions({ month, year, limit: 5 })
-  const { data: categories } = useCategories()
-
-  const expenseByCategory = categories
-    ?.filter((c) => c.type === 'expense')
-    .map((c) => ({
-      name: c.name,
-      value: transactions?.data
-        .filter((t) => t.categoryId === c.id && t.type === 'expense')
-        .reduce((s, t) => s + Number(t.amount), 0) || 0,
-    }))
-    .filter((c) => c.value > 0)
+  const { data: recentTransactions } = useTransactions({ month, year, limit: 5 })
+  const expenseByCategory = summary?.expensesByCategory?.filter((c) => c.value > 0) || []
 
   const barData = [
     { name: 'Entradas', value: summary?.income || 0, fill: '#2dd4bf' },
-    { name: 'Saidas', value: summary?.expense || 0, fill: '#f43f5e' },
+    { name: 'Saidas', value: -(summary?.expense || 0), fill: '#f43f5e' },
     { name: 'Saldo', value: summary?.balance || 0, fill: '#38bdf8' },
   ]
 
@@ -78,7 +67,6 @@ export function Dashboard() {
         </div>
         <div className="status-chip">
           <span />
-          Sistema online
         </div>
       </header>
 
@@ -114,9 +102,16 @@ export function Dashboard() {
           </div>
 
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={barData} margin={{ top: 18, right: 8, left: -18, bottom: 0 }}>
+            <BarChart data={barData} margin={{ top: 18, right: 12, left: 18, bottom: 0 }}>
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+              <YAxis
+                axisLine={false}
+                tickFormatter={(value) => formatCompactCurrency(Number(value))}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 11 }}
+                width={76}
+              />
+              <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.18)" />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(125, 211, 252, 0.06)' }} formatter={(v) => formatCurrency(Number(v))} />
               <Bar dataKey="value" radius={[8, 8, 4, 4]} barSize={42}>
                 {barData.map((entry) => (
@@ -136,12 +131,12 @@ export function Dashboard() {
             <ArrowUpRight size={18} />
           </div>
 
-          {expenseByCategory && expenseByCategory.length > 0 ? (
+          {expenseByCategory.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie data={expenseByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={82} innerRadius={48} paddingAngle={4}>
-                  {expenseByCategory.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  {expenseByCategory.map((item, i) => (
+                    <Cell key={item.categoryId || item.name} fill={item.color || COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} formatter={(v) => formatCurrency(Number(v))} />
@@ -170,10 +165,10 @@ export function Dashboard() {
         </div>
 
         <div className="activity-list">
-          {transactions?.data.length === 0 && (
+          {recentTransactions?.data.length === 0 && (
             <div className="empty-row">Nenhuma transacao este mes</div>
           )}
-          {transactions?.data.map((t) => (
+          {recentTransactions?.data.map((t) => (
             <div key={t.id} className="activity-row">
               <div>
                 <p>{t.title}</p>

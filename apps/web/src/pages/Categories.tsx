@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Plus, Trash2, Tag } from 'lucide-react'
+import { Pencil, Plus, Trash2, Tag } from 'lucide-react'
 import { Modal } from '../components/ui/Modal'
-import { useCategories, useCreateCategory } from '../hooks/useCategories'
+import { useCategories, useCreateCategory, useUpdateCategory } from '../hooks/useCategories'
 import { useMutation, useQueryClient } from 'react-query'
 import { api } from '../services/api'
+import { toast } from '../store/toastStore'
+import { getApiErrorMessage } from '../utils/apiError'
 import type { Category } from '../types'
 
 const PRESET_COLORS = [
@@ -21,19 +23,62 @@ const initialForm = { name: '', color: '#3b82f6', icon: '🏷️', type: 'expens
 export function Categories() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(initialForm)
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
 
   const { data: categories, isLoading } = useCategories()
   const createMutation = useCreateCategory()
+  const updateMutation = useUpdateCategory()
   const qc = useQueryClient()
 
   const deleteMutation = useMutation(
     async (id: string) => { await api.delete(`/categories/${id}`) },
-    { onSuccess: () => qc.invalidateQueries('categories') }
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('categories')
+        qc.invalidateQueries('transactions')
+        qc.invalidateQueries('summary')
+        toast.success('Categoria removida', 'As transações vinculadas ficaram como Sem categoria.')
+      },
+      onError: (error) => {
+        toast.error('Erro ao remover categoria', getApiErrorMessage(error))
+      },
+    }
   )
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    await createMutation.mutateAsync(form)
+    try {
+      if (editingCategoryId) {
+        await updateMutation.mutateAsync({ id: editingCategoryId, ...form })
+      } else {
+        await createMutation.mutateAsync(form)
+      }
+      setEditingCategoryId(null)
+      setShowForm(false)
+    } catch {
+      // Mutation onError already shows the toast.
+    }
+  }
+
+  function openCreateForm() {
+    setForm(initialForm)
+    setEditingCategoryId(null)
+    setShowForm(true)
+  }
+
+  function openEditForm(category: Category) {
+    setForm({
+      name: category.name,
+      color: category.color,
+      icon: category.icon,
+      type: category.type,
+    })
+    setEditingCategoryId(category.id)
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setEditingCategoryId(null)
     setShowForm(false)
   }
 
@@ -47,13 +92,13 @@ export function Categories() {
           <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>Categorias</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>Organize suas transações por categoria</p>
         </div>
-        <button className="btn-primary" onClick={() => { setForm(initialForm); setShowForm(true) }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button className="btn-primary" onClick={openCreateForm} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Plus size={15} /> Nova Categoria
         </button>
       </div>
 
       {showForm && (
-        <Modal title="Nova Categoria" onClose={() => setShowForm(false)}>
+        <Modal title={editingCategoryId ? 'Editar Categoria' : 'Nova Categoria'} onClose={closeForm}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             {/* Tipo */}
             <div>
@@ -120,9 +165,11 @@ export function Categories() {
             </div>
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={() => setShowForm(false)}>Cancelar</button>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading}>
-                {createMutation.isLoading ? 'Criando...' : 'Criar Categoria'}
+              <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={closeForm}>Cancelar</button>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading || updateMutation.isLoading}>
+                {editingCategoryId
+                  ? updateMutation.isLoading ? 'Salvando...' : 'Salvar Alterações'
+                  : createMutation.isLoading ? 'Criando...' : 'Criar Categoria'}
               </button>
             </div>
           </form>
@@ -138,7 +185,7 @@ export function Categories() {
             <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #10b98144, transparent)' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-            {income.map(c => <CategoryCard key={c.id} category={c} onDelete={() => deleteMutation.mutate(c.id)} />)}
+            {income.map(c => <CategoryCard key={c.id} category={c} onEdit={() => openEditForm(c)} onDelete={() => deleteMutation.mutate(c.id)} />)}
           </div>
         </div>
       )}
@@ -150,7 +197,7 @@ export function Categories() {
             <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, #f43f5e44, transparent)' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-            {expense.map(c => <CategoryCard key={c.id} category={c} onDelete={() => deleteMutation.mutate(c.id)} />)}
+            {expense.map(c => <CategoryCard key={c.id} category={c} onEdit={() => openEditForm(c)} onDelete={() => deleteMutation.mutate(c.id)} />)}
           </div>
         </div>
       )}
@@ -164,7 +211,7 @@ export function Categories() {
   )
 }
 
-function CategoryCard({ category, onDelete }: { category: Category; onDelete: () => void }) {
+function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEdit: () => void; onDelete: () => void }) {
   return (
     <div className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -176,11 +223,14 @@ function CategoryCard({ category, onDelete }: { category: Category; onDelete: ()
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: category.color, marginTop: 4, boxShadow: `0 0 6px ${category.color}` }} />
         </div>
       </div>
-      <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, transition: 'color 0.15s' }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--red)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
-        <Trash2 size={14} />
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <button onClick={onEdit} className="icon-button" aria-label="Editar categoria" type="button">
+          <Pencil size={14} />
+        </button>
+        <button onClick={onDelete} className="icon-button danger" aria-label="Excluir categoria" type="button">
+          <Trash2 size={14} />
+        </button>
+      </div>
     </div>
   )
 }

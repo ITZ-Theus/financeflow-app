@@ -45,6 +45,12 @@ export interface Summary {
   income: number
   expense: number
   balance: number
+  expensesByCategory: Array<{
+    categoryId: string | null
+    name: string
+    color: string
+    value: number
+  }>
 }
 
 export interface PaginatedResult<T> {

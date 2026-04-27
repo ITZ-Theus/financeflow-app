@@ -19,17 +19,25 @@ export function Goals() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    await createMutation.mutateAsync({ title: form.title, targetAmount: Number(form.targetAmount), deadline: form.deadline })
-    setForm({ title: '', targetAmount: '', deadline: '' })
-    setShowForm(false)
+    try {
+      await createMutation.mutateAsync({ title: form.title, targetAmount: Number(form.targetAmount), deadline: form.deadline })
+      setForm({ title: '', targetAmount: '', deadline: '' })
+      setShowForm(false)
+    } catch {
+      // Mutation onError already shows the toast.
+    }
   }
 
   async function handleDeposit(e: React.FormEvent) {
     e.preventDefault()
     if (!depositGoal) return
-    await updateMutation.mutateAsync({ id: depositGoal.id, currentAmount: Number(depositGoal.currentAmount) + Number(depositValue) })
-    setDepositGoalId(null)
-    setDepositValue('')
+    try {
+      await updateMutation.mutateAsync({ id: depositGoal.id, currentAmount: Number(depositGoal.currentAmount) + Number(depositValue) })
+      setDepositGoalId(null)
+      setDepositValue('')
+    } catch {
+      // Mutation onError already shows the toast.
+    }
   }
 
   const statusLabel: Record<string, string> = { active: 'Ativa', completed: 'Concluída', cancelled: 'Cancelada' }

@@ -2,6 +2,7 @@ import { Response, Router } from 'express'
 import { z } from 'zod'
 import { AppDataSource } from '../../config/database'
 import { Category } from './category.entity'
+import { Transaction } from '../transactions/transaction.entity'
 import { AppError } from '../../shared/errors/AppError'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
 
@@ -17,7 +18,7 @@ class CategoryService {
     return this.repo.save(category)
   }
 
-  async update(userId: string, id: string, data: Partial<{ name: string; color: string; icon: string }>) {
+  async update(userId: string, id: string, data: Partial<{ name: string; color: string; icon: string; type: 'income' | 'expense' }>) {
     const category = await this.repo.findOneBy({ id, userId })
     if (!category) throw new AppError('Categoria não encontrada', 404)
     Object.assign(category, data)
@@ -27,6 +28,12 @@ class CategoryService {
   async delete(userId: string, id: string) {
     const category = await this.repo.findOneBy({ id, userId })
     if (!category) throw new AppError('Categoria não encontrada', 404)
+
+    await AppDataSource.getRepository(Transaction).update(
+      { userId, categoryId: id },
+      { categoryId: null }
+    )
+
     await this.repo.remove(category)
   }
 }

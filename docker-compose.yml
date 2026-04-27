@@ -28,6 +28,7 @@ services:
       JWT_SECRET: sua_chave_secreta_super_segura_aqui
       JWT_EXPIRES_IN: 7d
       WEB_URL: http://localhost:5173
+      DB_MIGRATIONS_RUN: true
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: financeflow

@@ -4,6 +4,22 @@ import { useCategories } from '../hooks/useCategories'
 import { useCreateTransaction, useDeleteTransaction, useTransactions } from '../hooks/useTransactions'
 import { formatCurrency, formatDate } from '../utils/formatters'
 
+function formatCurrencyInput(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+
+  const amount = Number(digits) / 100
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)
+}
+
+function parseCurrencyInput(value: string): number {
+  const normalized = value.replace(/\./g, '').replace(',', '.')
+  return Number(normalized)
+}
+
 export function Transactions() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
@@ -22,13 +38,17 @@ export function Transactions() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    await createMutation.mutateAsync({
-      ...form,
-      amount: Number(form.amount),
-      categoryId: form.categoryId || undefined,
-    })
-    setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
-    setShowForm(false)
+    try {
+      await createMutation.mutateAsync({
+        ...form,
+        amount: parseCurrencyInput(form.amount),
+        categoryId: form.categoryId || undefined,
+      })
+      setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
+      setShowForm(false)
+    } catch {
+      // Mutation onError already shows the toast.
+    }
   }
 
   return (
@@ -71,11 +91,12 @@ export function Transactions() {
             <div>
               <label className="label">Valor (R$)</label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                placeholder="0,00"
                 className="input"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={(e) => setForm({ ...form, amount: formatCurrencyInput(e.target.value) })}
                 required
               />
             </div>
