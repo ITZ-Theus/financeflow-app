@@ -8,6 +8,7 @@ The project was built as a portfolio-grade application, with a typed React front
 
 - Web app: https://financeflow-app-eight.vercel.app
 - API health check: https://financeflow-api-q5ax.onrender.com/health
+- Demo account: `demo@financeflow.dev` / `FinanceFlow@2026`
 
 ## Highlights
 
@@ -59,6 +60,7 @@ financeflow/
 ### Authentication
 
 - User registration and login
+- One-click demo login with seeded portfolio data
 - Password hashing with bcrypt
 - JWT-based route protection
 - Persistent frontend auth state with Zustand
@@ -195,12 +197,17 @@ DB_NAME=financeflow
 DATABASE_URL=
 DB_SSL=false
 DB_MIGRATIONS_RUN=false
+DEMO_SEED_ON_STARTUP=false
+DEMO_USER_EMAIL=demo@financeflow.dev
+DEMO_USER_PASSWORD=FinanceFlow@2026
 ```
 
 Web variables:
 
 ```txt
 VITE_API_URL=http://localhost:3333/api
+VITE_DEMO_EMAIL=demo@financeflow.dev
+VITE_DEMO_PASSWORD=FinanceFlow@2026
 ```
 
 The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup.
@@ -215,6 +222,7 @@ npm run dev:web       # Start the Web app in development mode
 npm run build:api     # Compile the API
 npm run build:web     # Build the frontend
 npm run migration:run # Run pending API database migrations
+npm run seed:demo     # Create or refresh the demo account data
 npm test              # Run API tests
 ```
 
@@ -226,6 +234,7 @@ npm run test:integration --workspace=apps/api
 npm run test:coverage --workspace=apps/api
 npm run migration:show --workspace=apps/api
 npm run migration:revert --workspace=apps/api
+npm run seed:demo --workspace=apps/api
 ```
 
 ## Database Migrations
@@ -241,6 +250,16 @@ npm run migration:revert
 ```
 
 Production should also run migrations before serving traffic. The API enables startup migrations automatically when `NODE_ENV=production`.
+
+## Demo Data
+
+The repository includes an idempotent demo seed for portfolio reviewers. It creates a `FinanceFlow Demo` user, category set, current-month transactions and goals. The seed can be run manually:
+
+```bash
+npm run seed:demo
+```
+
+For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service and configure matching `VITE_DEMO_EMAIL` and `VITE_DEMO_PASSWORD` in the web service.
 
 ## Testing
 
@@ -302,6 +321,9 @@ WEB_URL=https://financeflow-app-eight.vercel.app
 DATABASE_URL=<your-postgres-connection-string>
 DB_SSL=true
 DB_MIGRATIONS_RUN=true
+DEMO_SEED_ON_STARTUP=true
+DEMO_USER_EMAIL=demo@financeflow.dev
+DEMO_USER_PASSWORD=<demo-password>
 ```
 
 For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`. Keep `WEB_URL` without a trailing slash to match browser origins exactly.
@@ -320,13 +342,14 @@ Required Web variable:
 
 ```txt
 VITE_API_URL=https://financeflow-api-q5ax.onrender.com/api
+VITE_DEMO_EMAIL=demo@financeflow.dev
+VITE_DEMO_PASSWORD=<demo-password>
 ```
 
 The web app includes `apps/web/vercel.json` to redirect client-side routes back to `index.html`, which keeps React Router working on page refresh.
 
 ## Roadmap
 
-- Add seed data and a demo account for recruiters
 - Add frontend tests with React Testing Library
 - Add E2E tests for the main user journey
 - Add CSV export for transactions

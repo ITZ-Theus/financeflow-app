@@ -215,6 +215,28 @@ describe('TransactionService', () => {
         { categoryId: 'cat-food', name: 'Alimentacao', color: '#f59e0b', value: 80 },
       ])
     })
+
+    it('deve arredondar totais financeiros para centavos', async () => {
+      const transactions = [
+        makeTransaction({ type: 'income', amount: 0.1 }),
+        makeTransaction({ type: 'income', amount: 0.2 }),
+        makeTransaction({ type: 'expense', amount: 0.1 }),
+      ]
+
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(transactions),
+      }
+      repo.createQueryBuilder.mockReturnValue(qb)
+
+      const result = await service.summary(USER_ID, {})
+
+      expect(result.income).toBe(0.3)
+      expect(result.expense).toBe(0.1)
+      expect(result.balance).toBe(0.2)
+    })
   })
 
   // ─── FIND ALL ──────────────────────────────────────────────

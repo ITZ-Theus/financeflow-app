@@ -58,4 +58,10 @@ export const env = {
     password: process.env.DB_PASS || process.env.POSTGRES_PASSWORD || 'financeflow123',
     database: process.env.DB_NAME || process.env.POSTGRES_DB || 'financeflow',
   },
+
+  demo: {
+    seedOnStartup: process.env.DEMO_SEED_ON_STARTUP === 'true',
+    email: process.env.DEMO_USER_EMAIL || 'demo@financeflow.dev',
+    password: process.env.DEMO_USER_PASSWORD || 'FinanceFlow@2026',
+  },
 }

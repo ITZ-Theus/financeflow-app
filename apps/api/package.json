@@ -9,6 +9,8 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:show": "npm run typeorm -- migration:show",
+    "seed:demo": "ts-node src/seeds/demo.ts",
+    "seed:demo:prod": "node dist/seeds/demo.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

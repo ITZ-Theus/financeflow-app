@@ -29,6 +29,10 @@ function getMonthRange(query: any) {
   }
 }
 
+function roundMoney(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100
+}
+
 export class TransactionService {
   private repo = AppDataSource.getRepository(Transaction)
 
@@ -61,8 +65,8 @@ export class TransactionService {
     }
 
     const transactions = await qb.getMany()
-    const income  = transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)
-    const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+    const income  = roundMoney(transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0))
+    const expense = roundMoney(transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0))
     const expensesByCategory = Array.from(
       transactions
         .filter(t => t.type === 'expense')
@@ -75,14 +79,14 @@ export class TransactionService {
             value: 0,
           }
 
-          current.value += Number(t.amount)
+          current.value = roundMoney(current.value + Number(t.amount))
           acc.set(key, current)
           return acc
         }, new Map<string, { categoryId: string | null; name: string; color: string; value: number }>())
         .values()
     )
 
-    return { income, expense, balance: income - expense, expensesByCategory }
+    return { income, expense, balance: roundMoney(income - expense), expensesByCategory }
   }
 
   async create(userId: string, data: CreateTransactionDTO): Promise<Transaction> {

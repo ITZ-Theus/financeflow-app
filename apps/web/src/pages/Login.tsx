@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { BrandMark } from '../components/ui/BrandMark'
+import { toast } from '../store/toastStore'
+
+const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'demo@financeflow.dev'
+const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'FinanceFlow@2026'
 
 export function Login() {
   const [email, setEmail]       = useState('')
@@ -20,6 +24,20 @@ export function Login() {
       navigate('/dashboard')
     } catch {
       setError('E-mail ou senha inválidos')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDemoLogin() {
+    setError('')
+    setLoading(true)
+    try {
+      await login(demoEmail, demoPassword)
+      toast.success('Demo carregada', 'Explore o FinanceFlow com dados prontos.')
+      navigate('/dashboard')
+    } catch {
+      setError('Conta demo indisponível no momento')
     } finally {
       setLoading(false)
     }
@@ -58,6 +76,22 @@ export function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
+
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ width: '100%', marginTop: 12 }}
+            onClick={handleDemoLogin}
+            disabled={loading}
+          >
+            Entrar como demo
+          </button>
+
+          <div className="demo-credentials">
+            <span>Demo</span>
+            <code>{demoEmail}</code>
+            <code>{demoPassword}</code>
+          </div>
 
           <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--text-muted)' }}>
             Não tem conta?{' '}

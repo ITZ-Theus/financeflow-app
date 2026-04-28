@@ -29,6 +29,9 @@ services:
       JWT_EXPIRES_IN: 7d
       WEB_URL: http://localhost:5173
       DB_MIGRATIONS_RUN: true
+      DEMO_SEED_ON_STARTUP: true
+      DEMO_USER_EMAIL: demo@financeflow.dev
+      DEMO_USER_PASSWORD: FinanceFlow@2026
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: financeflow
@@ -50,6 +53,8 @@ services:
       - api
     environment:
       VITE_API_URL: http://localhost:3333/api
+      VITE_DEMO_EMAIL: demo@financeflow.dev
+      VITE_DEMO_PASSWORD: FinanceFlow@2026
     ports:
       - '5173:5173'
     volumes:

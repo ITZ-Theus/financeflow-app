@@ -268,6 +268,32 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
+.demo-credentials {
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 8px;
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 12px;
+}
+
+.demo-credentials span {
+  color: var(--text-secondary);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-credentials code {
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .animate-in {
   animation: fadeIn 0.32s ease;
 }
