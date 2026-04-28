@@ -56,6 +56,11 @@ financeflow/
   docker-compose.yml      # Local PostgreSQL, API and Web orchestration
 ```
 
+## Technical Documentation
+
+- [Architecture overview](docs/architecture.md)
+- [Interview guide, Portuguese](docs/interview-guide.pt-BR.md)
+
 ## Core Features
 
 ### Authentication
