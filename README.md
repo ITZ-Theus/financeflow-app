@@ -20,6 +20,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
+- API security hardening with Helmet, auth rate limiting and request IDs
 - Unit and integration tests for the API
 - GitHub Actions CI for build and test validation
 
@@ -200,6 +201,9 @@ DB_MIGRATIONS_RUN=false
 DEMO_SEED_ON_STARTUP=false
 DEMO_USER_EMAIL=demo@financeflow.dev
 DEMO_USER_PASSWORD=FinanceFlow@2026
+BODY_LIMIT=1mb
+AUTH_RATE_LIMIT_WINDOW_MS=900000
+AUTH_RATE_LIMIT_MAX=20
 ```
 
 Web variables:
@@ -210,7 +214,7 @@ VITE_DEMO_EMAIL=demo@financeflow.dev
 VITE_DEMO_PASSWORD=FinanceFlow@2026
 ```
 
-The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup.
+The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`.
 
 ## Scripts
 
@@ -268,8 +272,8 @@ The API test suite covers authentication, shared utilities, transaction business
 Current suite:
 
 ```txt
-Test Suites: 6 passed
-Tests:       61 passed
+Test Suites: 8 passed
+Tests:       70 passed
 ```
 
 Run all API tests:
@@ -286,6 +290,13 @@ GitHub Actions validates the project on pushes and pull requests to `main` and `
 - build the API
 - build the Web app
 - run API tests
+
+## Security And Observability
+
+- Helmet adds baseline HTTP security headers.
+- Authentication routes use rate limiting to reduce brute-force risk.
+- Every response receives an `X-Request-Id` header for easier debugging across Render logs, browser errors and API responses.
+- Unexpected API errors are logged with the request id while returning a generic public message to the client.
 
 Deployment is configured as a manual workflow so it can be enabled safely after production services and secrets are available.
 
@@ -324,6 +335,9 @@ DB_MIGRATIONS_RUN=true
 DEMO_SEED_ON_STARTUP=true
 DEMO_USER_EMAIL=demo@financeflow.dev
 DEMO_USER_PASSWORD=<demo-password>
+BODY_LIMIT=1mb
+AUTH_RATE_LIMIT_WINDOW_MS=900000
+AUTH_RATE_LIMIT_MAX=20
 ```
 
 For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`. Keep `WEB_URL` without a trailing slash to match browser origins exactly.

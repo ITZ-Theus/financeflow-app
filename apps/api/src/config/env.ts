@@ -64,4 +64,10 @@ export const env = {
     email: process.env.DEMO_USER_EMAIL || 'demo@financeflow.dev',
     password: process.env.DEMO_USER_PASSWORD || 'FinanceFlow@2026',
   },
+
+  security: {
+    bodyLimit: process.env.BODY_LIMIT || '1mb',
+    authRateLimitWindowMs: getNumber(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
+    authRateLimitMax: getNumber(process.env.AUTH_RATE_LIMIT_MAX, 20),
+  },
 }
