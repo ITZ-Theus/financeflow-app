@@ -228,6 +228,7 @@ npm run build:web     # Build the frontend
 npm run migration:run # Run pending API database migrations
 npm run seed:demo     # Create or refresh the demo account data
 npm test              # Run API tests
+npm run test:web      # Run frontend tests
 ```
 
 API-specific scripts:
@@ -239,6 +240,13 @@ npm run test:coverage --workspace=apps/api
 npm run migration:show --workspace=apps/api
 npm run migration:revert --workspace=apps/api
 npm run seed:demo --workspace=apps/api
+```
+
+Web-specific scripts:
+
+```bash
+npm run test --workspace=apps/web
+npm run test:watch --workspace=apps/web
 ```
 
 ## Database Migrations
@@ -267,19 +275,25 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, category and goal behavior, and route-level integration flows.
+The API test suite covers authentication, shared utilities, transaction business rules, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications.
 
-Current suite:
+Current suites:
 
 ```txt
-Test Suites: 8 passed
-Tests:       70 passed
+API: 8 test suites, 70 tests
+Web: 4 test files, 11 tests
 ```
 
 Run all API tests:
 
 ```bash
 npm test
+```
+
+Run Web tests:
+
+```bash
+npm run test:web
 ```
 
 ## CI
@@ -290,6 +304,7 @@ GitHub Actions validates the project on pushes and pull requests to `main` and `
 - build the API
 - build the Web app
 - run API tests
+- run Web tests
 
 ## Security And Observability
 

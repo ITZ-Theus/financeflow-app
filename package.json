@@ -12,6 +12,8 @@
     "migration:revert": "npm run migration:revert --workspace=apps/api",
     "migration:show": "npm run migration:show --workspace=apps/api",
     "seed:demo": "npm run seed:demo --workspace=apps/api",
-    "test": "npm run test --workspace=apps/api"
+    "test": "npm run test --workspace=apps/api",
+    "test:api": "npm run test --workspace=apps/api",
+    "test:web": "npm run test --workspace=apps/web"
   }
 }

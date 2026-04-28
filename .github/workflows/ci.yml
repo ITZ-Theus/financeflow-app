@@ -40,3 +40,6 @@ jobs:
         env:
           JWT_SECRET: test_secret_ci
           NODE_ENV: test
+
+      - name: Run Web tests
+        run: npm run test:web
