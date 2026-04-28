@@ -68,6 +68,7 @@ Frase boa:
 - CI rodando build e testes.
 - Testes unitarios e de integracao na API.
 - Testes de frontend com Vitest e Testing Library.
+- Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
 - Rate limit no auth, Helmet, CORS configurado e request id.
 - Conta demo para recrutador testar rapidamente.
 
@@ -107,7 +108,7 @@ Frase boa:
 
 ### O que voce melhoraria?
 
-> Eu adicionaria E2E com Playwright cobrindo login demo, criacao de categoria e criacao de transacao. Tambem colocaria logs estruturados, Sentry, exportacao CSV, transacoes recorrentes e orcamento por categoria.
+> Eu expandiria os testes E2E para cobrir transacoes e metas, alem do fluxo atual de login demo e categorias. Tambem colocaria logs estruturados, Sentry, exportacao CSV, transacoes recorrentes e orcamento por categoria.
 
 ## Como Fazer Uma Demo Em 5 Minutos
 

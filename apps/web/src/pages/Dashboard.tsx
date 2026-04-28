@@ -58,7 +58,7 @@ export function Dashboard() {
   ]
 
   return (
-    <div className="dashboard-screen animate-in">
+    <div className="dashboard-screen animate-in" data-testid="dashboard-page">
       <header className="page-header">
         <div>
           <span className="page-kicker">FinanceFlow OS</span>

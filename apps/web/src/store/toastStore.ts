@@ -15,11 +15,19 @@ interface ToastState {
   remove: (id: string) => void
 }
 
+function createToastId(): string {
+  const randomUUID = globalThis.crypto?.randomUUID
+
+  return randomUUID
+    ? randomUUID.call(globalThis.crypto)
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
 
   notify: (toast) => {
-    const id = crypto.randomUUID()
+    const id = createToastId()
 
     set((state) => ({
       toasts: [...state.toasts, { ...toast, id }],

@@ -2,7 +2,7 @@
 
 FinanceFlow is a full stack personal finance management application focused on clarity, speed and a polished product experience. It allows users to track income and expenses, organize transactions by category, monitor financial goals and visualize monthly cash flow through an interactive dashboard.
 
-The project was built as a portfolio-grade application, with a typed React frontend, a modular Node.js API, Docker-based local infrastructure and automated backend tests.
+The project was built as a portfolio-grade application, with a typed React frontend, a modular Node.js API, Docker-based local infrastructure and automated tests across backend, frontend and browser flows.
 
 ## Live Demo
 
@@ -21,7 +21,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
 - API security hardening with Helmet, auth rate limiting and request IDs
-- Unit and integration tests for the API
+- Unit, integration, frontend and E2E tests
 - GitHub Actions CI for build and test validation
 
 ## Tech Stack
@@ -31,7 +31,7 @@ The project was built as a portfolio-grade application, with a typed React front
 | Frontend | React, Vite, TypeScript, React Router, React Query, Zustand, Recharts, Tailwind CSS |
 | Backend | Node.js, Express, TypeScript, TypeORM, Zod, JWT, bcrypt |
 | Database | PostgreSQL |
-| Testing | Jest, ts-jest, Supertest |
+| Testing | Jest, ts-jest, Supertest, Vitest, Testing Library, Playwright |
 | Infrastructure | Docker, Docker Compose, GitHub Actions |
 
 ## Project Structure
@@ -234,6 +234,7 @@ npm run migration:run # Run pending API database migrations
 npm run seed:demo     # Create or refresh the demo account data
 npm test              # Run API tests
 npm run test:web      # Run frontend tests
+npm run test:e2e      # Run Playwright E2E tests against a running local stack
 ```
 
 API-specific scripts:
@@ -252,6 +253,13 @@ Web-specific scripts:
 ```bash
 npm run test --workspace=apps/web
 npm run test:watch --workspace=apps/web
+```
+
+E2E scripts:
+
+```bash
+npm run test:e2e
+npm run test:e2e:ui
 ```
 
 ## Database Migrations
@@ -280,13 +288,14 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications.
+The API test suite covers authentication, shared utilities, transaction business rules, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
 
 Current suites:
 
 ```txt
 API: 8 test suites, 70 tests
 Web: 4 test files, 11 tests
+E2E: demo login and category management flow
 ```
 
 Run all API tests:
@@ -301,6 +310,13 @@ Run Web tests:
 npm run test:web
 ```
 
+Run E2E tests after starting the local stack:
+
+```bash
+docker compose up -d --build postgres api web
+npm run test:e2e
+```
+
 ## CI
 
 GitHub Actions validates the project on pushes and pull requests to `main` and `develop`:
@@ -310,6 +326,8 @@ GitHub Actions validates the project on pushes and pull requests to `main` and `
 - build the Web app
 - run API tests
 - run Web tests
+
+The repository also includes a Playwright E2E workflow that runs on pull requests and can be triggered manually from GitHub Actions.
 
 ## Security And Observability
 
@@ -384,8 +402,6 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 
 ## Roadmap
 
-- Add frontend tests with React Testing Library
-- Add E2E tests for the main user journey
 - Add CSV export for transactions
 - Add recurring transactions and category budgets
 - Add observability and production error tracking

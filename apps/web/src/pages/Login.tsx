@@ -83,6 +83,7 @@ export function Login() {
             style={{ width: '100%', marginTop: 12 }}
             onClick={handleDemoLogin}
             disabled={loading}
+            data-testid="demo-login-button"
           >
             Entrar como demo
           </button>

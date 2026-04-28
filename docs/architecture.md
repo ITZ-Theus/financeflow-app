@@ -155,7 +155,9 @@ Frontend tests cover:
 - category icon rendering;
 - toast notification behavior.
 
-GitHub Actions runs builds and tests for both applications on pushes and pull requests.
+End-to-end tests use Playwright to validate a real browser journey with the demo account, including dashboard access and category management.
+
+GitHub Actions runs builds and tests for both applications on pushes and pull requests. A dedicated Playwright workflow runs E2E validation on pull requests and can also be triggered manually.
 
 ## Key Tradeoffs
 
@@ -170,7 +172,7 @@ GitHub Actions runs builds and tests for both applications on pushes and pull re
 
 ## Future Improvements
 
-- End-to-end tests with Playwright for login, category and transaction flows.
+- Expand Playwright coverage to include transaction and goal flows.
 - Structured production logging with a request logger.
 - Error tracking with Sentry or a similar service.
 - CSV export and recurring transactions.

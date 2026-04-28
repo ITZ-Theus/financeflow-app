@@ -27,7 +27,7 @@ services:
       NODE_ENV: development
       JWT_SECRET: sua_chave_secreta_super_segura_aqui
       JWT_EXPIRES_IN: 7d
-      WEB_URL: http://localhost:5173
+      WEB_URL: ${WEB_URL:-http://localhost:5173}
       DB_MIGRATIONS_RUN: true
       DEMO_SEED_ON_STARTUP: true
       DEMO_USER_EMAIL: demo@financeflow.dev
@@ -52,7 +52,7 @@ services:
     depends_on:
       - api
     environment:
-      VITE_API_URL: http://localhost:3333/api
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3333/api}
       VITE_DEMO_EMAIL: demo@financeflow.dev
       VITE_DEMO_PASSWORD: FinanceFlow@2026
     ports:

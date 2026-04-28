@@ -100,14 +100,14 @@ export function Categories() {
           <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>Categorias</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>Organize suas transacoes por categoria</p>
         </div>
-        <button className="btn-primary" onClick={openCreateForm} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button className="btn-primary" onClick={openCreateForm} style={{ display: 'flex', alignItems: 'center', gap: 6 }} data-testid="new-category-button">
           <Plus size={15} /> Nova Categoria
         </button>
       </div>
 
       {showForm && (
         <Modal title={editingCategoryId ? 'Editar Categoria' : 'Nova Categoria'} onClose={closeForm}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }} data-testid="category-form">
             <div>
               <label className="label">Tipo</label>
               <div style={{ display: 'flex', gap: 8 }}>
@@ -132,7 +132,7 @@ export function Categories() {
 
             <div>
               <label className="label">Nome</label>
-              <input className="input" placeholder="Ex: Alimentacao" value={form.name} onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))} required />
+              <input className="input" placeholder="Ex: Alimentacao" value={form.name} onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))} required data-testid="category-name-input" />
             </div>
 
             <div>
@@ -178,7 +178,7 @@ export function Categories() {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={closeForm}>Cancelar</button>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading || updateMutation.isLoading}>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading || updateMutation.isLoading} data-testid="save-category-button">
                 {editingCategoryId
                   ? updateMutation.isLoading ? 'Salvando...' : 'Salvar Alteracoes'
                   : createMutation.isLoading ? 'Criando...' : 'Criar Categoria'}
@@ -257,7 +257,7 @@ function CategorySection({
 
 function CategoryCard({ category, onEdit, onDelete }: { category: Category; onEdit: () => void; onDelete: () => void }) {
   return (
-    <div className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div className="card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} data-testid="category-card">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0, background: `${category.color}22`, border: `1px solid ${category.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: category.color }}>
           <CategoryIcon icon={category.icon} size={17} />
