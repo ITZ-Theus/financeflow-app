@@ -4,6 +4,7 @@ import { AppDataSource } from '../../config/database'
 import { User } from '../users/user.entity'
 import { AppError } from '../../shared/errors/AppError'
 import { env } from '../../config/env'
+import { seedDemoData } from '../../seeds/demo'
 
 interface RegisterDTO { name: string; email: string; password: string }
 interface LoginDTO    { email: string; password: string }
@@ -38,10 +39,12 @@ export class AuthService {
   }
 
   async demoLogin() {
-    const user = await this.userRepo.findOne({
-      where: { email: env.demo.email },
-      select: ['id', 'name', 'email'],
-    })
+    let user = await this.findDemoUser()
+
+    if (!user) {
+      await seedDemoData()
+      user = await this.findDemoUser()
+    }
 
     if (!user) {
       throw new AppError('Conta demo indisponivel', 404)
@@ -49,6 +52,13 @@ export class AuthService {
 
     const token = this.generateToken(user.id)
     return { user: { id: user.id, name: user.name, email: user.email }, token }
+  }
+
+  private async findDemoUser() {
+    return this.userRepo.findOne({
+      where: { email: env.demo.email },
+      select: ['id', 'name', 'email'],
+    })
   }
 
   private generateToken(userId: string): string {

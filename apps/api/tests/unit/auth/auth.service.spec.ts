@@ -11,7 +11,12 @@ jest.mock('../../../src/config/database', () => ({
   },
 }))
 
+jest.mock('../../../src/seeds/demo', () => ({
+  seedDemoData: jest.fn(),
+}))
+
 import { AppDataSource } from '../../../src/config/database'
+import { seedDemoData } from '../../../src/seeds/demo'
 
 describe('AuthService', () => {
   let service: AuthService
@@ -147,13 +152,23 @@ describe('AuthService', () => {
       expect(result.token).toBeDefined()
     })
 
-    it('deve retornar erro se a conta demo nao existir', async () => {
+    it('deve criar os dados demo se a conta ainda nao existir', async () => {
+      const user = makeUser({ email: 'demo@financeflow.dev' })
+      userRepo.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(user)
+
+      const result = await service.demoLogin()
+
+      expect(seedDemoData).toHaveBeenCalled()
+      expect(result.user.email).toBe('demo@financeflow.dev')
+      expect(result.token).toBeDefined()
+    })
+
+    it('deve retornar erro se a conta demo continuar indisponivel apos o seed', async () => {
       userRepo.findOne.mockResolvedValue(null)
 
-      await expect(service.demoLogin()).rejects.toMatchObject({
-        statusCode: 404,
-        message: 'Conta demo indisponivel',
-      })
+      await expect(service.demoLogin()).rejects.toMatchObject({ statusCode: 404 })
     })
   })
 })
