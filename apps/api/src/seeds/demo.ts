@@ -6,6 +6,7 @@ import { User } from '../modules/users/user.entity'
 import { Category } from '../modules/categories/category.entity'
 import { Transaction } from '../modules/transactions/transaction.entity'
 import { Goal } from '../modules/goals/goal.entity'
+import { logger } from '../shared/logging/logger'
 
 type DemoCategory = {
   name: string
@@ -124,7 +125,7 @@ export async function seedDemoData() {
     }),
   ])
 
-  console.log(`Demo account ready: ${env.demo.email}`)
+  logger.info({ email: env.demo.email }, 'demo account ready')
 }
 
 async function run() {
@@ -135,7 +136,7 @@ async function run() {
 
 if (require.main === module) {
   run().catch((err) => {
-    console.error('Failed to seed demo data:', err)
+    logger.error({ err }, 'failed to seed demo data')
     process.exit(1)
   })
 }

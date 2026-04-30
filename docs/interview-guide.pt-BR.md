@@ -69,7 +69,7 @@ Frase boa:
 - Testes unitarios e de integracao na API.
 - Testes de frontend com Vitest e Testing Library.
 - Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
-- Rate limit no auth, Helmet, CORS configurado e request id.
+- Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.
 
 ## Perguntas Que Podem Aparecer
@@ -100,7 +100,7 @@ Frase boa:
 
 ### Como voce debuga erro em producao?
 
-> Cada resposta tem `X-Request-Id`. Se o frontend mostra erro, eu consigo pegar esse id e procurar o log correspondente na API. Erros inesperados sao logados com request id, mensagem e stack.
+> Cada resposta tem `X-Request-Id`. Se o frontend mostra erro, eu consigo pegar esse id e procurar o log correspondente na API. Os requests sao logados em JSON com metodo, rota, status, duracao e request id. Erros inesperados tambem sao logados com mensagem e stack.
 
 ### Como funciona CORS no projeto?
 

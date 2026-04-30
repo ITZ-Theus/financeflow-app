@@ -21,6 +21,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
 - API security hardening with Helmet, auth rate limiting and request IDs
+- Structured API logging with request duration, status and correlation ids
 - Unit, integration, frontend and E2E tests
 - GitHub Actions CI for build and test validation
 
@@ -29,7 +30,7 @@ The project was built as a portfolio-grade application, with a typed React front
 | Layer | Technologies |
 | --- | --- |
 | Frontend | React, Vite, TypeScript, React Router, React Query, Zustand, Recharts, Tailwind CSS |
-| Backend | Node.js, Express, TypeScript, TypeORM, Zod, JWT, bcrypt |
+| Backend | Node.js, Express, TypeScript, TypeORM, Zod, JWT, bcrypt, Pino |
 | Database | PostgreSQL |
 | Testing | Jest, ts-jest, Supertest, Vitest, Testing Library, Playwright |
 | Infrastructure | Docker, Docker Compose, GitHub Actions |
@@ -209,6 +210,7 @@ DEMO_USER_PASSWORD=FinanceFlow@2026
 BODY_LIMIT=1mb
 AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=20
+LOG_LEVEL=debug
 ```
 
 Web variables:
@@ -219,7 +221,7 @@ VITE_DEMO_EMAIL=demo@financeflow.dev
 VITE_DEMO_PASSWORD=FinanceFlow@2026
 ```
 
-The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`.
+The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`. `LOG_LEVEL` controls structured API log verbosity.
 
 ## Scripts
 
@@ -334,6 +336,7 @@ The repository also includes a Playwright E2E workflow that runs on pull request
 - Helmet adds baseline HTTP security headers.
 - Authentication routes use rate limiting to reduce brute-force risk.
 - Every response receives an `X-Request-Id` header for easier debugging across Render logs, browser errors and API responses.
+- API requests are logged as structured JSON with method, path, status code, duration and request id.
 - Unexpected API errors are logged with the request id while returning a generic public message to the client.
 
 Deployment is configured as a manual workflow so it can be enabled safely after production services and secrets are available.
@@ -376,6 +379,7 @@ DEMO_USER_PASSWORD=<demo-password>
 BODY_LIMIT=1mb
 AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=20
+LOG_LEVEL=info
 ```
 
 For external providers such as Neon or Supabase, use their pooled or direct PostgreSQL connection string and keep `DB_SSL=true`. Keep `WEB_URL` without a trailing slash to match browser origins exactly.

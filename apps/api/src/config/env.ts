@@ -70,4 +70,8 @@ export const env = {
     authRateLimitWindowMs: getNumber(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     authRateLimitMax: getNumber(process.env.AUTH_RATE_LIMIT_MAX, 20),
   },
+
+  logging: {
+    level: process.env.LOG_LEVEL || (nodeEnv === 'test' ? 'silent' : isProduction ? 'info' : 'debug'),
+  },
 }

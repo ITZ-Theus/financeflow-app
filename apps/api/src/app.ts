@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit'
 import { env } from './config/env'
 import { errorHandler } from './shared/errors/errorHandler'
 import { requestContext } from './shared/middlewares/requestContext'
+import { requestLogger } from './shared/middlewares/requestLogger'
 import { authRoutes } from './modules/auth/auth.routes'
 import { transactionRoutes } from './modules/transactions/transaction.routes'
 import { categoryRoutes } from './modules/categories/category.routes'
@@ -17,6 +18,7 @@ export function createApp() {
 
   app.set('trust proxy', 1)
   app.use(requestContext)
+  app.use(requestLogger)
   app.use(helmet({
     crossOriginResourcePolicy: false,
   }))

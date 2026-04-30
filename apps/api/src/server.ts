@@ -2,6 +2,7 @@ import { app } from './app'
 import { AppDataSource } from './config/database'
 import { env } from './config/env'
 import { seedDemoData } from './seeds/demo'
+import { logger } from './shared/logging/logger'
 
 const MAX_RETRIES = 10
 const RETRY_DELAY_MS = 3000
@@ -13,14 +14,14 @@ function wait(ms: number) {
 async function connectDatabase(attempt = 1): Promise<void> {
   try {
     await AppDataSource.initialize()
-    console.log('Database connected')
+    logger.info('database connected')
   } catch (err) {
     if (attempt >= MAX_RETRIES) {
-      console.error('Error connecting to database:', err)
+      logger.error({ err }, 'error connecting to database')
       process.exit(1)
     }
 
-    console.warn(`Database unavailable, retrying (${attempt}/${MAX_RETRIES})...`)
+    logger.warn({ attempt, maxRetries: MAX_RETRIES }, 'database unavailable, retrying')
     await wait(RETRY_DELAY_MS)
     await connectDatabase(attempt + 1)
   }
@@ -33,7 +34,7 @@ async function bootstrap() {
   }
 
   app.listen(env.port, () => {
-    console.log(`API running on port ${env.port}`)
+    logger.info({ port: env.port }, 'api running')
   })
 }
 

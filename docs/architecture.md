@@ -93,6 +93,8 @@ Zod schemas validate incoming request payloads at route boundaries. Domain error
 
 Unexpected errors are handled by a centralized `errorHandler`, logged with a request id and returned to the client as a generic error response. Each response includes an `X-Request-Id` header, which helps correlate frontend failures with backend logs.
 
+API logs are structured with Pino. The request logger records method, path, status code, duration, user id when available, user agent and request id. Successful responses are logged as `info`, client errors as `warn` and server errors as `error`.
+
 ## Security Measures
 
 - JWT authentication for protected routes.
@@ -102,6 +104,7 @@ Unexpected errors are handled by a centralized `errorHandler`, logged with a req
 - CORS restricted by `WEB_URL`.
 - Rate limiting on authentication routes.
 - JSON body size limit.
+- Structured logs with sensitive fields redacted.
 - Production migrations instead of schema synchronization.
 
 ## Frontend Design
