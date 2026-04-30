@@ -37,6 +37,13 @@ export class AuthService {
     return { user: { id: user.id, name: user.name, email: user.email }, token }
   }
 
+  async demoLogin() {
+    return this.login({
+      email: env.demo.email,
+      password: env.demo.password,
+    })
+  }
+
   private generateToken(userId: string): string {
     return jwt.sign({ sub: userId }, env.jwt.secret, {
       expiresIn: env.jwt.expiresIn,

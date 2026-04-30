@@ -112,6 +112,21 @@ describe('Auth Routes - POST /api/auth', () => {
   })
 
   // ─── HEALTH CHECK ──────────────────────────────────────────
+  describe('POST /api/auth/demo-login', () => {
+    it('deve retornar 200 com token para a conta demo', async () => {
+      MockedAuthService.prototype.demoLogin.mockResolvedValue({
+        user: { id: 'demo-uuid', name: 'FinanceFlow Demo', email: 'demo@financeflow.dev' },
+        token: 'demo-jwt-token',
+      })
+
+      const res = await request(app).post('/api/auth/demo-login')
+
+      expect(res.status).toBe(200)
+      expect(res.body.token).toBeDefined()
+      expect(res.body.user.email).toBe('demo@financeflow.dev')
+    })
+  })
+
   describe('GET /health', () => {
     it('deve retornar status ok', async () => {
       const res = await request(app).get('/health')

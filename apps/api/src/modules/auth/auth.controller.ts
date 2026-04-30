@@ -38,4 +38,9 @@ export class AuthController {
     const result = await this.service.login(data)
     return res.status(200).json(result)
   }
+
+  async demoLogin(_req: Request, res: Response) {
+    const result = await this.service.demoLogin()
+    return res.status(200).json(result)
+  }
 }

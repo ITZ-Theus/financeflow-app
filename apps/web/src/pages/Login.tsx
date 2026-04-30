@@ -5,14 +5,13 @@ import { BrandMark } from '../components/ui/BrandMark'
 import { toast } from '../store/toastStore'
 
 const demoEmail = import.meta.env.VITE_DEMO_EMAIL || 'demo@financeflow.dev'
-const demoPassword = import.meta.env.VITE_DEMO_PASSWORD || 'FinanceFlow@2026'
 
 export function Login() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const { login } = useAuthStore()
+  const { login, demoLogin } = useAuthStore()
   const navigate  = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -33,7 +32,7 @@ export function Login() {
     setError('')
     setLoading(true)
     try {
-      await login(demoEmail, demoPassword)
+      await demoLogin()
       toast.success('Demo carregada', 'Explore o FinanceFlow com dados prontos.')
       navigate('/dashboard')
     } catch {
@@ -91,7 +90,6 @@ export function Login() {
           <div className="demo-credentials">
             <span>Demo</span>
             <code>{demoEmail}</code>
-            <code>{demoPassword}</code>
           </div>
 
           <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--text-muted)' }}>

@@ -230,7 +230,6 @@ Web variables:
 ```txt
 VITE_API_URL=http://localhost:3333/api
 VITE_DEMO_EMAIL=demo@financeflow.dev
-VITE_DEMO_PASSWORD=FinanceFlow@2026
 ```
 
 The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`. `LOG_LEVEL` controls structured API log verbosity.
@@ -298,7 +297,7 @@ The repository includes an idempotent demo seed for portfolio reviewers. It crea
 npm run seed:demo
 ```
 
-For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service and configure matching `VITE_DEMO_EMAIL` and `VITE_DEMO_PASSWORD` in the web service.
+For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service. The demo login button calls the API demo-login endpoint, so the frontend does not need access to the demo password.
 
 ## Testing
 
@@ -411,7 +410,6 @@ Required Web variable:
 ```txt
 VITE_API_URL=https://financeflow-api-q5ax.onrender.com/api
 VITE_DEMO_EMAIL=demo@financeflow.dev
-VITE_DEMO_PASSWORD=<demo-password>
 ```
 
 The web app includes `apps/web/vercel.json` to redirect client-side routes back to `index.html`, which keeps React Router working on page refresh.

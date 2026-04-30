@@ -18,11 +18,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const hadToken = Boolean(useAuthStore.getState().token)
       useAuthStore.getState().logout()
+
       if (hadToken) {
-        toast.info('Sessão expirada', 'Faça login novamente para continuar.')
+        toast.info('Sessao expirada', 'Faca login novamente para continuar.')
+        window.location.href = '/login'
       }
-      window.location.href = '/login'
     }
+
     return Promise.reject(error)
   }
 )

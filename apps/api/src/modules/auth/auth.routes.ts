@@ -6,3 +6,4 @@ export const authRoutes = Router()
 
 authRoutes.post('/register', (req, res) => controller.register(req, res))
 authRoutes.post('/login',    (req, res) => controller.login(req, res))
+authRoutes.post('/demo-login', (req, res) => controller.demoLogin(req, res))

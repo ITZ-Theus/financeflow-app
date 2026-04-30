@@ -54,7 +54,6 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:3333/api}
       VITE_DEMO_EMAIL: demo@financeflow.dev
-      VITE_DEMO_PASSWORD: FinanceFlow@2026
     ports:
       - '5173:5173'
     volumes:

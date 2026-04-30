@@ -129,5 +129,21 @@ describe('AuthService', () => {
 
       expect(decoded.sub).toBe(user.id)
     })
+
+    it('deve autenticar a conta demo usando as variaveis do servidor', async () => {
+      const user = makeUser({
+        email: 'demo@financeflow.dev',
+        password: await bcrypt.hash('FinanceFlow@2026', 10),
+      })
+      userRepo.findOne.mockResolvedValue(user)
+
+      const result = await service.demoLogin()
+
+      expect(userRepo.findOne).toHaveBeenCalledWith(expect.objectContaining({
+        where: { email: 'demo@financeflow.dev' },
+      }))
+      expect(result.user.email).toBe('demo@financeflow.dev')
+      expect(result.token).toBeDefined()
+    })
   })
 })
