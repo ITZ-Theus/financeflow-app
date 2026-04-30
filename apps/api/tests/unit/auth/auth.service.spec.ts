@@ -130,10 +130,10 @@ describe('AuthService', () => {
       expect(decoded.sub).toBe(user.id)
     })
 
-    it('deve autenticar a conta demo usando as variaveis do servidor', async () => {
+    it('deve autenticar a conta demo sem depender da senha do frontend', async () => {
       const user = makeUser({
         email: 'demo@financeflow.dev',
-        password: await bcrypt.hash('FinanceFlow@2026', 10),
+        password: await bcrypt.hash('senha-antiga-no-banco', 10),
       })
       userRepo.findOne.mockResolvedValue(user)
 
@@ -141,9 +141,19 @@ describe('AuthService', () => {
 
       expect(userRepo.findOne).toHaveBeenCalledWith(expect.objectContaining({
         where: { email: 'demo@financeflow.dev' },
+        select: ['id', 'name', 'email'],
       }))
       expect(result.user.email).toBe('demo@financeflow.dev')
       expect(result.token).toBeDefined()
+    })
+
+    it('deve retornar erro se a conta demo nao existir', async () => {
+      userRepo.findOne.mockResolvedValue(null)
+
+      await expect(service.demoLogin()).rejects.toMatchObject({
+        statusCode: 404,
+        message: 'Conta demo indisponivel',
+      })
     })
   })
 })

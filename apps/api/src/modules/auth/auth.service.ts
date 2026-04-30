@@ -38,10 +38,17 @@ export class AuthService {
   }
 
   async demoLogin() {
-    return this.login({
-      email: env.demo.email,
-      password: env.demo.password,
+    const user = await this.userRepo.findOne({
+      where: { email: env.demo.email },
+      select: ['id', 'name', 'email'],
     })
+
+    if (!user) {
+      throw new AppError('Conta demo indisponivel', 404)
+    }
+
+    const token = this.generateToken(user.id)
+    return { user: { id: user.id, name: user.name, email: user.email }, token }
   }
 
   private generateToken(userId: string): string {
