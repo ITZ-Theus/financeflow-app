@@ -47,6 +47,7 @@ export function useCreateTransaction() {
       onSuccess: () => {
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('budgets')
         toast.success('Transação criada', 'Seu fluxo financeiro foi atualizado.')
       },
       onError: (error) => {
@@ -64,6 +65,7 @@ export function useDeleteTransaction() {
       onSuccess: () => {
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('budgets')
         toast.success('Transação removida', 'O saldo foi recalculado automaticamente.')
       },
       onError: (error) => {

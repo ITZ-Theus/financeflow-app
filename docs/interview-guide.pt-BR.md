@@ -4,7 +4,7 @@ Este guia serve para treinar a explicacao do projeto em entrevista tecnica. A id
 
 ## Pitch De 30 Segundos
 
-> O FinanceFlow e uma aplicacao fullstack de controle financeiro pessoal. Eu construi com React, TypeScript, Node, Express e PostgreSQL, usando autenticacao JWT, migrations com TypeORM, Docker, CI no GitHub Actions e deploy separado entre frontend e backend. A ideia foi tratar como um produto real, com dashboard, categorias, metas, conta demo, tratamento de erros, notificacoes, testes automatizados e preocupacoes de seguranca.
+> O FinanceFlow e uma aplicacao fullstack de controle financeiro pessoal. Eu construi com React, TypeScript, Node, Express e PostgreSQL, usando autenticacao JWT, migrations com TypeORM, Docker, CI no GitHub Actions e deploy separado entre frontend e backend. A ideia foi tratar como um produto real, com dashboard, categorias, orcamentos por categoria, metas, conta demo, tratamento de erros, notificacoes, testes automatizados e preocupacoes de seguranca.
 
 ## Explicacao De Arquitetura
 
@@ -69,6 +69,7 @@ Frase boa:
 - Testes unitarios e de integracao na API.
 - Testes de frontend com Vitest e Testing Library.
 - Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
+- Orcamentos mensais por categoria com calculo de uso, restante e status.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.
 
@@ -76,7 +77,7 @@ Frase boa:
 
 ### Por que PostgreSQL?
 
-> Porque o dominio e relacional: usuarios, categorias, transacoes e metas possuem relacionamentos claros. PostgreSQL tambem e robusto, muito usado em producao e combina bem com migrations.
+> Porque o dominio e relacional: usuarios, categorias, transacoes, orcamentos e metas possuem relacionamentos claros. PostgreSQL tambem e robusto, muito usado em producao e combina bem com migrations.
 
 ### Por que TypeORM?
 
@@ -108,7 +109,7 @@ Frase boa:
 
 ### O que voce melhoraria?
 
-> Eu expandiria os testes E2E para cobrir transacoes e metas, alem do fluxo atual de login demo e categorias. Tambem colocaria logs estruturados, Sentry, exportacao CSV, transacoes recorrentes e orcamento por categoria.
+> Eu expandiria os testes E2E para cobrir transacoes, metas e orcamentos. Tambem adicionaria Sentry, exportacao CSV, transacoes recorrentes e alertas quando um orcamento estiver perto do limite.
 
 ## Como Fazer Uma Demo Em 5 Minutos
 
@@ -118,9 +119,10 @@ Frase boa:
 4. Crie uma categoria.
 5. Crie uma transacao usando essa categoria.
 6. Mostre o toast de feedback.
-7. Volte para o dashboard e mostre os numeros atualizados.
-8. Abra rapidamente o GitHub Actions e mostre o CI.
-9. Mostre o README e a documentacao de arquitetura.
+7. Abra a tela de orcamentos e mostre o limite, gasto, restante e status por categoria.
+8. Volte para o dashboard e mostre os numeros atualizados.
+9. Abra rapidamente o GitHub Actions e mostre o CI.
+10. Mostre o README e a documentacao de arquitetura.
 
 ## Como Explicar Que O Projeto Tem Nivel Profissional
 
@@ -133,6 +135,7 @@ Use esta estrutura:
 - [ ] Explicar a arquitetura sem olhar o codigo.
 - [ ] Explicar login de ponta a ponta.
 - [ ] Explicar criacao de transacao de ponta a ponta.
+- [ ] Explicar como o orcamento por categoria e calculado.
 - [ ] Explicar por que existe service separado da rota.
 - [ ] Explicar migrations.
 - [ ] Explicar CORS e variaveis de ambiente.

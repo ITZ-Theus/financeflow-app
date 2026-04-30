@@ -12,6 +12,7 @@ const Register = lazy(() => import('./pages/Register').then((module) => ({ defau
 const Dashboard = lazy(() => import('./pages/Dashboard').then((module) => ({ default: module.Dashboard })))
 const Transactions = lazy(() => import('./pages/Transactions').then((module) => ({ default: module.Transactions })))
 const Categories = lazy(() => import('./pages/Categories').then((module) => ({ default: module.Categories })))
+const Budgets = lazy(() => import('./pages/Budgets').then((module) => ({ default: module.Budgets })))
 const Goals = lazy(() => import('./pages/Goals').then((module) => ({ default: module.Goals })))
 
 const queryClient = new QueryClient({
@@ -36,6 +37,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="dashboard"    element={<Dashboard />} />
               <Route path="transactions" element={<Transactions />} />
               <Route path="categories"   element={<Categories />} />
+              <Route path="budgets"      element={<Budgets />} />
               <Route path="goals"        element={<Goals />} />
             </Route>
           </Routes>

@@ -43,6 +43,7 @@ export function Categories() {
         qc.invalidateQueries('categories')
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('budgets')
         toast.success('Categoria removida', 'As transacoes vinculadas ficaram como Sem categoria.')
       },
       onError: (error) => {

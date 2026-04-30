@@ -41,6 +41,24 @@ export interface Goal {
   createdAt?: string
 }
 
+export type BudgetStatus = 'safe' | 'warning' | 'exceeded'
+
+export interface Budget {
+  id: string
+  amount: number | string
+  spent: number
+  remaining: number
+  percentage: number
+  status: BudgetStatus
+  month: number
+  year: number
+  categoryId: string
+  category: Category
+  userId: string
+  createdAt?: string
+  updatedAt?: string
+}
+
 export interface Summary {
   income: number
   expense: number

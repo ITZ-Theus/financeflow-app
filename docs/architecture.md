@@ -26,7 +26,7 @@ Neon PostgreSQL
 | --- | --- | --- |
 | Web App | User interface, authentication state, dashboard, forms and client-side routing | React, Vite, TypeScript, React Query, Zustand, Recharts |
 | API | Authentication, validation, business rules, persistence orchestration and error handling | Node.js, Express, TypeScript, Zod, TypeORM |
-| Database | Relational storage for users, categories, transactions and goals | PostgreSQL |
+| Database | Relational storage for users, categories, transactions, budgets and goals | PostgreSQL |
 | CI | Build and test validation on every push and pull request | GitHub Actions |
 | Local Runtime | Reproducible development environment | Docker Compose |
 
@@ -37,6 +37,7 @@ The API is organized by business domain:
 ```txt
 src/modules/
   auth/
+  budgets/
   categories/
   goals/
   transactions/
@@ -71,6 +72,7 @@ React form
 | User | Owns all private financial data |
 | Category | User-scoped income or expense category with custom color and icon |
 | Transaction | Income or expense record, optionally linked to a category |
+| Budget | Monthly spending limit for a user-owned expense category |
 | Goal | User-scoped financial target with progress and status |
 
 All user-owned queries are scoped by `userId` to prevent cross-account access.
@@ -147,6 +149,7 @@ Backend tests cover:
 - authentication service behavior;
 - authentication middleware;
 - transaction service business rules;
+- budget progress calculation and category ownership rules;
 - category and goal behavior;
 - route-level integration flows;
 - security middleware.
@@ -176,8 +179,7 @@ GitHub Actions runs builds and tests for both applications on pushes and pull re
 ## Future Improvements
 
 - Expand Playwright coverage to include transaction and goal flows.
-- Structured production logging with a request logger.
 - Error tracking with Sentry or a similar service.
 - CSV export and recurring transactions.
-- Category budgets and spending alerts.
+- Spending alerts when category budgets approach the limit.
 - Dashboard performance improvements with finer-grained code splitting.

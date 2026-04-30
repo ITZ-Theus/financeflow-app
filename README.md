@@ -1,6 +1,6 @@
 # FinanceFlow
 
-FinanceFlow is a full stack personal finance management application focused on clarity, speed and a polished product experience. It allows users to track income and expenses, organize transactions by category, monitor financial goals and visualize monthly cash flow through an interactive dashboard.
+FinanceFlow is a full stack personal finance management application focused on clarity, speed and a polished product experience. It allows users to track income and expenses, organize transactions by category, set monthly category budgets, monitor financial goals and visualize monthly cash flow through an interactive dashboard.
 
 The project was built as a portfolio-grade application, with a typed React frontend, a modular Node.js API, Docker-based local infrastructure and automated tests across backend, frontend and browser flows.
 
@@ -15,6 +15,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - JWT authentication with protected API routes
 - Income and expense tracking
 - Category management for financial organization
+- Monthly category budgets with spending progress
 - Financial goals with progress tracking
 - Monthly dashboard with summary cards and charts
 - Premium dark UI with hover interactions and responsive layout
@@ -43,7 +44,7 @@ financeflow/
     api/                  # Express API, TypeORM entities, services, tests
       src/
         config/           # Environment and database configuration
-        modules/          # Auth, transactions, categories, goals and users
+        modules/          # Auth, transactions, categories, budgets, goals and users
         shared/           # Shared errors and utilities
       tests/              # Unit and integration tests
     web/                  # React application
@@ -86,6 +87,13 @@ financeflow/
 - Custom color and icon support
 - User-scoped category ownership
 
+### Budgets
+
+- Create monthly budgets for expense categories
+- Track spent amount, remaining amount and percentage used
+- Surface safe, warning and exceeded budget states
+- Recalculate progress when transactions or categories change
+
 ### Goals
 
 - Create financial goals with target amounts and deadlines
@@ -122,6 +130,10 @@ Local:      http://localhost:3333/api
 | `POST` | `/categories` | Create a category |
 | `PUT` | `/categories/:id` | Update a category |
 | `DELETE` | `/categories/:id` | Delete a category |
+| `GET` | `/budgets` | List monthly category budgets |
+| `POST` | `/budgets` | Create a category budget |
+| `PUT` | `/budgets/:id` | Update a category budget |
+| `DELETE` | `/budgets/:id` | Delete a category budget |
 | `GET` | `/goals` | List goals |
 | `POST` | `/goals` | Create a goal |
 | `PUT` | `/goals/:id` | Update a goal |
@@ -280,7 +292,7 @@ Production should also run migrations before serving traffic. The API enables st
 
 ## Demo Data
 
-The repository includes an idempotent demo seed for portfolio reviewers. It creates a `FinanceFlow Demo` user, category set, current-month transactions and goals. The seed can be run manually:
+The repository includes an idempotent demo seed for portfolio reviewers. It creates a `FinanceFlow Demo` user, category set, current-month transactions, budgets and goals. The seed can be run manually:
 
 ```bash
 npm run seed:demo
@@ -290,12 +302,12 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
+The API test suite covers authentication, shared utilities, transaction business rules, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
 
 Current suites:
 
 ```txt
-API: 8 test suites, 70 tests
+API: 10 test suites, 79 tests
 Web: 4 test files, 11 tests
 E2E: demo login and category management flow
 ```
@@ -407,7 +419,7 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 ## Roadmap
 
 - Add CSV export for transactions
-- Add recurring transactions and category budgets
+- Add recurring transactions
 - Add observability and production error tracking
 
 ## Author

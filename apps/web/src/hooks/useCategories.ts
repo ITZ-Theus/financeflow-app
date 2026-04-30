@@ -32,6 +32,7 @@ export function useCreateCategory() {
     {
       onSuccess: () => {
         qc.invalidateQueries('categories')
+        qc.invalidateQueries('budgets')
         toast.success('Categoria criada', 'A categoria já está disponível para suas transações.')
       },
       onError: (error) => {
@@ -52,6 +53,7 @@ export function useUpdateCategory() {
       onSuccess: () => {
         qc.invalidateQueries('categories')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('budgets')
         toast.success('Categoria atualizada', 'As mudanças já estão refletidas no sistema.')
       },
       onError: (error) => {

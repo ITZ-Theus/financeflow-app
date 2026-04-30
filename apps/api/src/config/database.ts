@@ -6,6 +6,7 @@ import { User } from '../modules/users/user.entity'
 import { Transaction } from '../modules/transactions/transaction.entity'
 import { Category } from '../modules/categories/category.entity'
 import { Goal } from '../modules/goals/goal.entity'
+import { Budget } from '../modules/budgets/budget.entity'
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -19,6 +20,6 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   migrationsRun: env.db.migrationsRun,
   logging: false,
-  entities: [User, Transaction, Category, Goal],
+  entities: [User, Transaction, Category, Goal, Budget],
   migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
 })

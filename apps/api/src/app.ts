@@ -12,6 +12,7 @@ import { authRoutes } from './modules/auth/auth.routes'
 import { transactionRoutes } from './modules/transactions/transaction.routes'
 import { categoryRoutes } from './modules/categories/category.routes'
 import { goalRoutes } from './modules/goals/goal.routes'
+import { budgetRoutes } from './modules/budgets/budget.routes'
 
 export function createApp() {
   const app = express()
@@ -49,6 +50,7 @@ export function createApp() {
   app.use('/api/transactions', transactionRoutes)
   app.use('/api/categories', categoryRoutes)
   app.use('/api/goals', goalRoutes)
+  app.use('/api/budgets', budgetRoutes)
 
   app.use(errorHandler)
 

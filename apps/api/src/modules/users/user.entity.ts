@@ -5,6 +5,7 @@ import {
 import { Transaction } from '../transactions/transaction.entity'
 import { Category } from '../categories/category.entity'
 import { Goal } from '../goals/goal.entity'
+import { Budget } from '../budgets/budget.entity'
 
 @Entity('users')
 export class User {
@@ -28,6 +29,9 @@ export class User {
 
   @OneToMany(() => Goal, g => g.user)
   goals: Goal[]
+
+  @OneToMany(() => Budget, b => b.user)
+  budgets: Budget[]
 
   @CreateDateColumn()
   createdAt: Date

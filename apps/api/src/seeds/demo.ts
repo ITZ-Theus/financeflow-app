@@ -7,6 +7,7 @@ import { Category } from '../modules/categories/category.entity'
 import { Transaction } from '../modules/transactions/transaction.entity'
 import { Goal } from '../modules/goals/goal.entity'
 import { logger } from '../shared/logging/logger'
+import { Budget } from '../modules/budgets/budget.entity'
 
 type DemoCategory = {
   name: string
@@ -22,6 +23,11 @@ type DemoTransaction = {
   day: number
   categoryName: string
   description?: string
+}
+
+type DemoBudget = {
+  categoryName: string
+  amount: number
 }
 
 const categories: DemoCategory[] = [
@@ -45,6 +51,13 @@ const transactions: DemoTransaction[] = [
   { title: 'Restaurant', amount: 168.3, type: 'expense', day: 24, categoryName: 'Food' },
 ]
 
+const budgets: DemoBudget[] = [
+  { categoryName: 'Food', amount: 900 },
+  { categoryName: 'Transport', amount: 500 },
+  { categoryName: 'Health', amount: 350 },
+  { categoryName: 'Education', amount: 450 },
+]
+
 function getDateInCurrentMonth(day: number): string {
   const now = new Date()
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
@@ -55,6 +68,7 @@ function getDateInCurrentMonth(day: number): string {
 }
 
 async function resetDemoData(userId: string) {
+  await AppDataSource.getRepository(Budget).delete({ userId })
   await AppDataSource.getRepository(Transaction).delete({ userId })
   await AppDataSource.getRepository(Goal).delete({ userId })
   await AppDataSource.getRepository(Category).delete({ userId })
@@ -65,6 +79,7 @@ export async function seedDemoData() {
   const categoryRepo = AppDataSource.getRepository(Category)
   const transactionRepo = AppDataSource.getRepository(Transaction)
   const goalRepo = AppDataSource.getRepository(Goal)
+  const budgetRepo = AppDataSource.getRepository(Budget)
 
   const password = await bcrypt.hash(env.demo.password, 10)
   let user = await userRepo.findOne({
@@ -102,6 +117,20 @@ export async function seedDemoData() {
       date: getDateInCurrentMonth(item.day),
       description: item.description || null,
       categoryId: category?.id || null,
+      userId: user.id,
+    }))
+  }
+
+  const now = new Date()
+  for (const item of budgets) {
+    const category = savedCategories.get(item.categoryName)
+    if (!category) continue
+
+    await budgetRepo.save(budgetRepo.create({
+      amount: item.amount,
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+      categoryId: category.id,
       userId: user.id,
     }))
   }

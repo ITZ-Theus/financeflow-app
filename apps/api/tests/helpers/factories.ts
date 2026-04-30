@@ -2,6 +2,7 @@ import { User } from '../../src/modules/users/user.entity'
 import { Transaction } from '../../src/modules/transactions/transaction.entity'
 import { Category } from '../../src/modules/categories/category.entity'
 import { Goal } from '../../src/modules/goals/goal.entity'
+import { Budget } from '../../src/modules/budgets/budget.entity'
 
 export function makeUser(overrides: Partial<User> = {}): User {
   return Object.assign(new User(), {
@@ -53,6 +54,23 @@ export function makeGoal(overrides: Partial<Goal> = {}): Goal {
     status: 'active' as const,
     userId: 'user-uuid-1',
     createdAt: new Date('2024-01-01'),
+    ...overrides,
+  })
+}
+
+export function makeBudget(overrides: Partial<Budget> = {}): Budget {
+  const category = makeCategory()
+
+  return Object.assign(new Budget(), {
+    id: 'budget-uuid-1',
+    amount: 800,
+    month: 1,
+    year: 2026,
+    categoryId: category.id,
+    category,
+    userId: 'user-uuid-1',
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
     ...overrides,
   })
 }
