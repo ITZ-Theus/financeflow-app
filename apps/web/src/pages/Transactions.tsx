@@ -170,7 +170,7 @@ export function Transactions() {
   const saving = createMutation.isLoading || updateMutation.isLoading
 
   return (
-    <div className="dashboard-screen animate-in">
+    <div className="dashboard-screen animate-in" data-testid="transactions-page">
       <header className="page-header">
         <div>
           <span className="page-kicker">Fluxo financeiro</span>
@@ -190,6 +190,7 @@ export function Transactions() {
           <button
             onClick={openCreateForm}
             className="btn-primary inline-action"
+            data-testid="new-transaction-button"
           >
             <Plus size={16} />
             Nova Transacao
@@ -273,7 +274,7 @@ export function Transactions() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="form-grid">
+          <form onSubmit={handleSubmit} className="form-grid" data-testid="transaction-form">
             <div>
               <label className="label">Titulo</label>
               <input
@@ -281,6 +282,7 @@ export function Transactions() {
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
+                data-testid="transaction-title-input"
               />
             </div>
 
@@ -294,6 +296,7 @@ export function Transactions() {
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: formatCurrencyInput(e.target.value) })}
                 required
+                data-testid="transaction-amount-input"
               />
             </div>
 
@@ -303,6 +306,7 @@ export function Transactions() {
                 className="input"
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value as 'income' | 'expense', categoryId: '' })}
+                data-testid="transaction-type-select"
               >
                 <option value="income">Entrada</option>
                 <option value="expense">Saida</option>
@@ -317,6 +321,7 @@ export function Transactions() {
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 required
+                data-testid="transaction-date-input"
               />
             </div>
 
@@ -326,6 +331,7 @@ export function Transactions() {
                 className="input"
                 value={form.categoryId}
                 onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                data-testid="transaction-category-select"
               >
                 <option value="">Sem categoria</option>
                 {categories?.filter((c) => c.type === form.type).map((c) => (
@@ -340,6 +346,7 @@ export function Transactions() {
                 className="input"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                data-testid="transaction-description-input"
               />
             </div>
 
@@ -377,7 +384,7 @@ export function Transactions() {
               <button type="button" onClick={closeForm} className="btn-ghost">
                 Cancelar
               </button>
-              <button type="submit" disabled={saving} className="btn-primary">
+              <button type="submit" disabled={saving} className="btn-primary" data-testid="save-transaction-button">
                 {saving ? 'Salvando...' : editingId ? 'Salvar Alteracoes' : 'Salvar'}
               </button>
             </div>
@@ -403,7 +410,7 @@ export function Transactions() {
             <div className="empty-row">Nenhuma transacao encontrada</div>
           )}
           {data?.data.map((t) => (
-            <div key={t.id} className="activity-row transaction-row">
+            <div key={t.id} className="activity-row transaction-row" data-testid="transaction-row">
               <div className="transaction-row__main">
                 <div className="transaction-row__icon" data-type={t.type}>
                   {t.type === 'income'

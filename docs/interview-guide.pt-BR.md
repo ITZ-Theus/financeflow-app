@@ -68,7 +68,7 @@ Frase boa:
 - CI rodando build e testes.
 - Testes unitarios e de integracao na API.
 - Testes de frontend com Vitest e Testing Library.
-- Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
+- Teste E2E com Playwright cobrindo login demo, categoria e ciclo de transacao.
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
 - Transacoes recorrentes mensais com geracao automatica e validacao de data final.
 - Tendencia mensal de entradas, saidas e saldo calculada pela API e exibida na dashboard.
@@ -116,7 +116,7 @@ Frase boa:
 
 ### O que voce melhoraria?
 
-> Eu expandiria os testes E2E para cobrir transacoes, metas e orcamentos. Tambem adicionaria Sentry, mais opcoes de recorrencia alem da mensal e alertas quando um orcamento estiver perto do limite.
+> Eu expandiria os testes E2E para cobrir metas e orcamentos. Tambem adicionaria Sentry, mais opcoes de recorrencia alem da mensal e alertas quando um orcamento estiver perto do limite.
 
 ## Como Fazer Uma Demo Em 5 Minutos
 

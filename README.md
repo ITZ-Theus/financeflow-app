@@ -310,14 +310,14 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, monthly trend aggregation, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
+The API test suite covers authentication, shared utilities, transaction business rules, monthly trend aggregation, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates real browser journeys with the demo account.
 
 Current suites:
 
 ```txt
 API: 10 test suites, 92 tests
 Web: 4 test files, 11 tests
-E2E: demo login and category management flow
+E2E: demo login, category management and transaction lifecycle flows
 ```
 
 Run all API tests:
