@@ -9,7 +9,7 @@ const createSchema = z.object({
   type: z.enum(['income', 'expense']),
   date: z.string(),
   description: z.string().optional(),
-  categoryId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().nullable().optional(),
 })
 
 type CreateTransactionInput = {
@@ -18,7 +18,7 @@ type CreateTransactionInput = {
   type: 'income' | 'expense'
   date: string
   description?: string
-  categoryId?: string
+  categoryId?: string | null
 }
 
 class TransactionController {

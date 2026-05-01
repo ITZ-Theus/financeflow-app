@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Download, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { Download, Pencil, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
-import { exportTransactionsCsv, useCreateTransaction, useDeleteTransaction, useTransactions } from '../hooks/useTransactions'
+import { exportTransactionsCsv, useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from '../hooks/useTransactions'
 import { toast } from '../store/toastStore'
 import { formatCurrency, formatDate } from '../utils/formatters'
+import type { Transaction, TransactionType } from '../types'
+import type { TransactionFilters } from '../hooks/useTransactions'
 
 function formatCurrencyInput(value: string): string {
   const digits = value.replace(/\D/g, '')
@@ -21,8 +23,28 @@ function parseCurrencyInput(value: string): number {
   return Number(normalized)
 }
 
+function formatAmountForForm(value: number | string): string {
+  return new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value))
+}
+
+const months = Array.from({ length: 12 }, (_, index) => ({
+  value: index + 1,
+  label: new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(new Date(2026, index, 1)),
+}))
+
 export function Transactions() {
+  const now = new Date()
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [filters, setFilters] = useState({
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+    type: '' as '' | TransactionType,
+    categoryId: '',
+  })
   const [form, setForm] = useState({
     title: '',
     amount: '',
@@ -32,22 +54,38 @@ export function Transactions() {
     categoryId: '',
   })
 
-  const { data, isLoading } = useTransactions({ limit: 20 })
+  const transactionParams: TransactionFilters = {
+    limit: 20,
+    month: filters.month,
+    year: filters.year,
+    ...(filters.type ? { type: filters.type } : {}),
+    ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+  }
+
+  const { data, isLoading } = useTransactions(transactionParams)
   const { data: categories } = useCategories()
   const createMutation = useCreateTransaction()
+  const updateMutation = useUpdateTransaction()
   const deleteMutation = useDeleteTransaction()
   const [exporting, setExporting] = useState(false)
+  const filterCategories = categories?.filter((category) => !filters.type || category.type === filters.type) ?? []
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     try {
-      await createMutation.mutateAsync({
+      const payload = {
         ...form,
         amount: parseCurrencyInput(form.amount),
-        categoryId: form.categoryId || undefined,
-      })
-      setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
-      setShowForm(false)
+        categoryId: form.categoryId || null,
+      }
+
+      if (editingId) {
+        await updateMutation.mutateAsync({ id: editingId, ...payload })
+      } else {
+        await createMutation.mutateAsync(payload)
+      }
+
+      closeForm()
     } catch {
       // Mutation onError already shows the toast.
     }
@@ -56,7 +94,7 @@ export function Transactions() {
   async function handleExport() {
     setExporting(true)
     try {
-      await exportTransactionsCsv()
+      await exportTransactionsCsv(transactionParams)
       toast.success('Exportacao concluida', 'Suas transacoes foram baixadas em CSV.')
     } catch {
       toast.error('Erro ao exportar', 'Nao foi possivel gerar o arquivo CSV.')
@@ -64,6 +102,42 @@ export function Transactions() {
       setExporting(false)
     }
   }
+
+  function resetFilters() {
+    setFilters({
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+      type: '',
+      categoryId: '',
+    })
+  }
+
+  function openCreateForm() {
+    setEditingId(null)
+    setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
+    setShowForm(true)
+  }
+
+  function openEditForm(transaction: Transaction) {
+    setEditingId(transaction.id)
+    setForm({
+      title: transaction.title,
+      amount: formatAmountForForm(transaction.amount),
+      type: transaction.type,
+      date: transaction.date,
+      description: transaction.description || '',
+      categoryId: transaction.categoryId || '',
+    })
+    setShowForm(true)
+  }
+
+  function closeForm() {
+    setEditingId(null)
+    setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
+    setShowForm(false)
+  }
+
+  const saving = createMutation.isLoading || updateMutation.isLoading
 
   return (
     <div className="dashboard-screen animate-in">
@@ -84,7 +158,7 @@ export function Transactions() {
             {exporting ? 'Exportando...' : 'Exportar CSV'}
           </button>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={openCreateForm}
             className="btn-primary inline-action"
           >
             <Plus size={16} />
@@ -93,12 +167,79 @@ export function Transactions() {
         </div>
       </header>
 
+      <section className="premium-panel filter-panel">
+        <div className="panel-heading">
+          <div>
+            <span>Filtros</span>
+            <h3>Periodo e categoria</h3>
+          </div>
+        </div>
+
+        <div className="filter-grid">
+          <div>
+            <label className="label">Mes</label>
+            <select
+              className="input"
+              value={filters.month}
+              onChange={(e) => setFilters((current) => ({ ...current, month: Number(e.target.value) }))}
+            >
+              {months.map((month) => (
+                <option key={month.value} value={month.value}>{month.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="label">Ano</label>
+            <input
+              className="input"
+              type="number"
+              min="2000"
+              max="2100"
+              value={filters.year}
+              onChange={(e) => setFilters((current) => ({ ...current, year: Number(e.target.value) }))}
+            />
+          </div>
+
+          <div>
+            <label className="label">Tipo</label>
+            <select
+              className="input"
+              value={filters.type}
+              onChange={(e) => setFilters((current) => ({ ...current, type: e.target.value as '' | TransactionType, categoryId: '' }))}
+            >
+              <option value="">Todos</option>
+              <option value="income">Entrada</option>
+              <option value="expense">Saida</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="label">Categoria</label>
+            <select
+              className="input"
+              value={filters.categoryId}
+              onChange={(e) => setFilters((current) => ({ ...current, categoryId: e.target.value }))}
+            >
+              <option value="">Todas</option>
+              {filterCategories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <button type="button" className="btn-ghost filter-reset" onClick={resetFilters}>
+            Limpar
+          </button>
+        </div>
+      </section>
+
       {showForm && (
         <section className="premium-panel form-panel">
           <div className="panel-heading">
             <div>
               <span>Registro</span>
-              <h3>Nova Transacao</h3>
+              <h3>{editingId ? 'Editar Transacao' : 'Nova Transacao'}</h3>
             </div>
           </div>
 
@@ -173,11 +314,11 @@ export function Transactions() {
             </div>
 
             <div className="form-actions">
-              <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">
+              <button type="button" onClick={closeForm} className="btn-ghost">
                 Cancelar
               </button>
-              <button type="submit" disabled={createMutation.isLoading} className="btn-primary">
-                {createMutation.isLoading ? 'Salvando...' : 'Salvar'}
+              <button type="submit" disabled={saving} className="btn-primary">
+                {saving ? 'Salvando...' : editingId ? 'Salvar Alteracoes' : 'Salvar'}
               </button>
             </div>
           </form>
@@ -188,8 +329,9 @@ export function Transactions() {
         <div className="panel-heading activity-panel__heading">
           <div>
             <span>Historico</span>
-            <h3>Movimentacoes recentes</h3>
+            <h3>Movimentacoes filtradas</h3>
           </div>
+          <strong className="result-count">{data?.total ?? 0} registro(s)</strong>
         </div>
 
         <div className="activity-list">
@@ -216,9 +358,18 @@ export function Transactions() {
                   {t.type === 'income' ? '+' : '-'}{formatCurrency(Number(t.amount))}
                 </strong>
                 <button
+                  onClick={() => openEditForm(t)}
+                  className="icon-button"
+                  aria-label="Editar transacao"
+                  type="button"
+                >
+                  <Pencil size={15} />
+                </button>
+                <button
                   onClick={() => deleteMutation.mutate(t.id)}
                   className="icon-button danger"
                   aria-label="Excluir transacao"
+                  type="button"
                 >
                   <Trash2 size={16} />
                 </button>

@@ -79,7 +79,7 @@ financeflow/
 - Create, list, update and delete transactions
 - Income and expense transaction types
 - Optional category association
-- Monthly filtering support in the API
+- Month, type and category filters for transaction history
 - Paginated transaction listing
 - CSV export for spreadsheet analysis and backup
 

@@ -19,7 +19,11 @@ export interface CreateTransactionPayload {
   type: TransactionType
   date: string
   description?: string
-  categoryId?: string
+  categoryId?: string | null
+}
+
+export interface UpdateTransactionPayload extends Partial<CreateTransactionPayload> {
+  id: string
 }
 
 export function useTransactions(params?: TransactionFilters) {
@@ -74,6 +78,27 @@ export function useCreateTransaction() {
       },
       onError: (error) => {
         toast.error('Erro ao criar transação', getApiErrorMessage(error))
+      },
+    }
+  )
+}
+
+export function useUpdateTransaction() {
+  const qc = useQueryClient()
+  return useMutation(
+    async ({ id, ...body }: UpdateTransactionPayload) => {
+      const { data } = await api.put<Transaction>(`/transactions/${id}`, body)
+      return data
+    },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('transactions')
+        qc.invalidateQueries('summary')
+        qc.invalidateQueries('budgets')
+        toast.success('Transacao atualizada', 'Seu fluxo financeiro foi recalculado.')
+      },
+      onError: (error) => {
+        toast.error('Erro ao atualizar transacao', getApiErrorMessage(error))
       },
     }
   )

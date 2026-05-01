@@ -9,7 +9,7 @@ interface CreateTransactionDTO {
   type: 'income' | 'expense'
   date: string
   description?: string
-  categoryId?: string
+  categoryId?: string | null
 }
 
 type TransactionQuery = {

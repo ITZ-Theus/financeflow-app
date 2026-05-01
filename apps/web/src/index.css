@@ -818,6 +818,29 @@ select.input option {
   padding: 22px;
 }
 
+.filter-panel {
+  margin-bottom: 18px;
+  padding: 22px;
+}
+
+.filter-grid {
+  align-items: end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1.1fr 0.75fr 0.9fr 1.2fr auto;
+}
+
+.filter-reset {
+  min-height: 42px;
+  padding-inline: 18px;
+}
+
+.result-count {
+  color: var(--text-muted);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+}
+
 .form-grid {
   display: grid;
   gap: 16px;
@@ -943,6 +966,14 @@ select.input option {
   .budget-health-content {
     grid-template-columns: 1fr;
   }
+
+  .filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-reset {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 720px) {
@@ -969,6 +1000,10 @@ select.input option {
   }
 
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-grid {
     grid-template-columns: 1fr;
   }
 
