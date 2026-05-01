@@ -75,6 +75,14 @@ export interface Summary {
   }>
 }
 
+export interface MonthlyTrendItem {
+  month: number
+  year: number
+  income: number
+  expense: number
+  balance: number
+}
+
 export interface PaginatedResult<T> {
   data: T[]
   total: number

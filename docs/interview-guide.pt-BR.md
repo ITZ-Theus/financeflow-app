@@ -71,6 +71,7 @@ Frase boa:
 - Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
 - Transacoes recorrentes mensais com geracao automatica e validacao de data final.
+- Tendencia mensal de entradas, saidas e saldo calculada pela API e exibida na dashboard.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.
 
@@ -104,6 +105,10 @@ Frase boa:
 
 > Cada resposta tem `X-Request-Id`. Se o frontend mostra erro, eu consigo pegar esse id e procurar o log correspondente na API. Os requests sao logados em JSON com metodo, rota, status, duracao e request id. Erros inesperados tambem sao logados com mensagem e stack.
 
+### Como funciona a tendencia mensal?
+
+> A API busca as transacoes do usuario em uma janela limitada de meses e agrega entradas, saidas e saldo por periodo. Eu deixei essa regra no service porque ela e uma regra de leitura do dominio financeiro, enquanto o frontend so consome o endpoint e renderiza o grafico.
+
 ### Como funciona CORS no projeto?
 
 > A API aceita a origem configurada em `WEB_URL`. Em producao esse valor aponta para a URL da Vercel. Isso evita liberar qualquer origem por padrao.
@@ -117,13 +122,14 @@ Frase boa:
 1. Abra o projeto em producao.
 2. Entre com a conta demo.
 3. Mostre o dashboard e explique entradas, saidas, saldo e graficos.
-4. Crie uma categoria.
-5. Crie uma transacao usando essa categoria.
-6. Mostre o toast de feedback.
-7. Abra a tela de orcamentos e mostre o limite, gasto, restante e status por categoria.
-8. Volte para o dashboard e mostre os numeros atualizados.
-9. Abra rapidamente o GitHub Actions e mostre o CI.
-10. Mostre o README e a documentacao de arquitetura.
+4. Explique o grafico de tendencia dos ultimos meses.
+5. Crie uma categoria.
+6. Crie uma transacao usando essa categoria.
+7. Mostre o toast de feedback.
+8. Abra a tela de orcamentos e mostre o limite, gasto, restante e status por categoria.
+9. Volte para o dashboard e mostre os numeros atualizados.
+10. Abra rapidamente o GitHub Actions e mostre o CI.
+11. Mostre o README e a documentacao de arquitetura.
 
 ## Como Explicar Que O Projeto Tem Nivel Profissional
 

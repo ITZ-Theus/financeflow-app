@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { api } from '../services/api'
 import { toast } from '../store/toastStore'
 import { getApiErrorMessage } from '../utils/apiError'
-import type { PaginatedResult, Summary, Transaction, TransactionType } from '../types'
+import type { MonthlyTrendItem, PaginatedResult, Summary, Transaction, TransactionType } from '../types'
 
 export interface TransactionFilters {
   page?: number
@@ -43,6 +43,13 @@ export function useSummary(params?: Pick<TransactionFilters, 'month' | 'year'>) 
   })
 }
 
+export function useMonthlyTrend(months = 6) {
+  return useQuery<MonthlyTrendItem[]>(['monthly-trend', months], async () => {
+    const { data } = await api.get('/transactions/trend', { params: { months } })
+    return data
+  })
+}
+
 function getFilename(disposition?: string): string {
   const match = disposition?.match(/filename="?([^"]+)"?/)
   return match?.[1] || 'financeflow-transactions.csv'
@@ -76,6 +83,7 @@ export function useCreateTransaction() {
       onSuccess: () => {
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('monthly-trend')
         qc.invalidateQueries('budgets')
         toast.success('Transação criada', 'Seu fluxo financeiro foi atualizado.')
       },
@@ -97,6 +105,7 @@ export function useUpdateTransaction() {
       onSuccess: () => {
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('monthly-trend')
         qc.invalidateQueries('budgets')
         toast.success('Transacao atualizada', 'Seu fluxo financeiro foi recalculado.')
       },
@@ -115,6 +124,7 @@ export function useDeleteTransaction() {
       onSuccess: () => {
         qc.invalidateQueries('transactions')
         qc.invalidateQueries('summary')
+        qc.invalidateQueries('monthly-trend')
         qc.invalidateQueries('budgets')
         toast.success('Transação removida', 'O saldo foi recalculado automaticamente.')
       },

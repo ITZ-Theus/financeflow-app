@@ -40,6 +40,11 @@ class TransactionController {
     return res.json(result)
   }
 
+  async trend(req: AuthRequest, res: Response) {
+    const result = await this.service.monthlyTrend(req.userId!, req.query)
+    return res.json(result)
+  }
+
   async export(req: AuthRequest, res: Response) {
     const csv = await this.service.exportCsv(req.userId!, req.query)
     const timestamp = new Date().toISOString().slice(0, 10)
@@ -73,6 +78,7 @@ const controller = new TransactionController()
 router.use(authMiddleware)
 router.get('/', (req, res) => controller.index(req as AuthRequest, res))
 router.get('/summary', (req, res) => controller.summary(req as AuthRequest, res))
+router.get('/trend', (req, res) => controller.trend(req as AuthRequest, res))
 router.get('/export', (req, res) => controller.export(req as AuthRequest, res))
 router.post('/', (req, res) => controller.store(req as AuthRequest, res))
 router.put('/:id', (req, res) => controller.update(req as AuthRequest, res))

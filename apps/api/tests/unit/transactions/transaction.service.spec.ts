@@ -303,6 +303,56 @@ describe('TransactionService', () => {
     })
   })
 
+  describe('monthlyTrend', () => {
+    it('deve agrupar entradas, saidas e saldo por mes', async () => {
+      const now = new Date()
+      const currentMonth = now.getMonth() + 1
+      const currentYear = now.getFullYear()
+      const previous = new Date(Date.UTC(currentYear, currentMonth - 2, 1))
+      const previousMonth = previous.getUTCMonth() + 1
+      const previousYear = previous.getUTCFullYear()
+      const formatDate = (year: number, month: number) => `${year}-${String(month).padStart(2, '0')}-10`
+
+      const transactions = [
+        makeTransaction({ type: 'income', amount: 4000, date: formatDate(previousYear, previousMonth) }),
+        makeTransaction({ type: 'expense', amount: 1500, date: formatDate(previousYear, previousMonth) }),
+        makeTransaction({ type: 'income', amount: 5000, date: formatDate(currentYear, currentMonth) }),
+        makeTransaction({ type: 'expense', amount: 3200, date: formatDate(currentYear, currentMonth) }),
+      ]
+
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(transactions),
+      }
+      repo.createQueryBuilder.mockReturnValue(qb)
+
+      const result = await service.monthlyTrend(USER_ID, { months: 2 })
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({ month: previousMonth, year: previousYear, income: 4000, expense: 1500, balance: 2500 })
+      expect(result[1]).toEqual({ month: currentMonth, year: currentYear, income: 5000, expense: 3200, balance: 1800 })
+      expect(qb.andWhere).toHaveBeenCalledWith('t.date >= :startDate AND t.date < :endDate', expect.objectContaining({
+        startDate: expect.stringMatching(/^\d{4}-\d{2}-01$/),
+        endDate: expect.stringMatching(/^\d{4}-\d{2}-01$/),
+      }))
+    })
+
+    it('deve usar seis meses quando parametro for invalido', async () => {
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      }
+      repo.createQueryBuilder.mockReturnValue(qb)
+
+      const result = await service.monthlyTrend(USER_ID, { months: 'abc' })
+
+      expect(result).toHaveLength(6)
+      expect(result.every((item) => item.income === 0 && item.expense === 0 && item.balance === 0)).toBe(true)
+    })
+  })
+
   // ─── FIND ALL ──────────────────────────────────────────────
   describe('findAll', () => {
     it('deve retornar lista paginada de transações', async () => {

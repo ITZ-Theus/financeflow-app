@@ -22,6 +22,14 @@ type TransactionQuery = {
   categoryId?: string
 }
 
+export interface MonthlyTrendItem {
+  month: number
+  year: number
+  income: number
+  expense: number
+  balance: number
+}
+
 function getMonthRange(query: any) {
   const month = Number(query.month)
   const year = Number(query.year)
@@ -41,6 +49,20 @@ function getMonthRange(query: any) {
 
 function roundMoney(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100
+}
+
+function getCurrentMonth() {
+  const now = new Date()
+  return { month: now.getMonth() + 1, year: now.getFullYear() }
+}
+
+function addMonths(month: number, year: number, amount: number) {
+  const date = new Date(Date.UTC(year, month - 1 + amount, 1))
+  return { month: date.getUTCMonth() + 1, year: date.getUTCFullYear() }
+}
+
+function getTrendPeriods(months: number, end = getCurrentMonth()) {
+  return Array.from({ length: months }, (_, index) => addMonths(end.month, end.year, index - months + 1))
 }
 
 function escapeCsv(value: string | number | null | undefined): string {
@@ -139,6 +161,39 @@ export class TransactionService {
     )
 
     return { income, expense, balance: roundMoney(income - expense), expensesByCategory }
+  }
+
+  async monthlyTrend(userId: string, query: { months?: string | number } = {}): Promise<MonthlyTrendItem[]> {
+    const requestedMonths = Number(query.months || 6)
+    const months = Number.isFinite(requestedMonths)
+      ? Math.min(Math.max(Math.floor(requestedMonths), 1), 12)
+      : 6
+    const periods = getTrendPeriods(months)
+    const first = periods[0]
+    const last = periods[periods.length - 1]
+    const startDate = new Date(Date.UTC(first.year, first.month - 1, 1)).toISOString().slice(0, 10)
+    const endDate = new Date(Date.UTC(last.year, last.month, 1)).toISOString().slice(0, 10)
+
+    const transactions = await this.repo.createQueryBuilder('t')
+      .where('t.userId = :userId', { userId })
+      .andWhere('t.date >= :startDate AND t.date < :endDate', { startDate, endDate })
+      .getMany()
+
+    return periods.map((period) => {
+      const monthTransactions = transactions.filter((transaction) => {
+        const date = parseDateOnly(transaction.date)
+        return date.getUTCMonth() + 1 === period.month && date.getUTCFullYear() === period.year
+      })
+      const income = roundMoney(monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0))
+      const expense = roundMoney(monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0))
+
+      return {
+        ...period,
+        income,
+        expense,
+        balance: roundMoney(income - expense),
+      }
+    })
   }
 
   async exportCsv(userId: string, query: TransactionQuery = {}): Promise<string> {

@@ -19,7 +19,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Category management for financial organization
 - Monthly category budgets with spending progress
 - Financial goals with progress tracking
-- Monthly dashboard with summary cards and charts
+- Monthly dashboard with summary cards, charts and six-month trend analysis
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
@@ -107,8 +107,10 @@ financeflow/
 ### Dashboard
 
 - Monthly income, expense and balance summary
+- Six-month trend chart for income, expenses and balance
 - Bar chart for cash flow overview
 - Expense distribution by category
+- Budget health panel with warning and exceeded categories
 - Recent transactions list
 - Premium dark interface with glass panels and hover effects
 
@@ -127,6 +129,7 @@ Local:      http://localhost:3333/api
 | `POST` | `/auth/login` | Authenticate a user |
 | `GET` | `/transactions` | List authenticated user's transactions |
 | `GET` | `/transactions/summary` | Get monthly financial summary |
+| `GET` | `/transactions/trend` | Get monthly income, expense and balance trend |
 | `GET` | `/transactions/export` | Export transactions as CSV |
 | `POST` | `/transactions` | Create a transaction |
 | `PUT` | `/transactions/:id` | Update a transaction |
@@ -306,12 +309,12 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
+The API test suite covers authentication, shared utilities, transaction business rules, monthly trend aggregation, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates a real browser journey with the demo account.
 
 Current suites:
 
 ```txt
-API: 10 test suites, 89 tests
+API: 10 test suites, 92 tests
 Web: 4 test files, 11 tests
 E2E: demo login and category management flow
 ```

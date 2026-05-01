@@ -66,6 +66,24 @@ describe('Transaction Routes - /api/transactions', () => {
     })
   })
 
+  describe('GET /api/transactions/trend', () => {
+    it('deve retornar tendencia mensal com token valido', async () => {
+      MockedService.prototype.monthlyTrend.mockResolvedValue([
+        { month: 4, year: 2026, income: 5000, expense: 2400, balance: 2600 },
+        { month: 5, year: 2026, income: 5200, expense: 2800, balance: 2400 },
+      ])
+
+      const res = await request(app)
+        .get('/api/transactions/trend?months=2')
+        .set('Authorization', `Bearer ${makeToken()}`)
+
+      expect(res.status).toBe(200)
+      expect(res.body).toHaveLength(2)
+      expect(res.body[0]).toEqual({ month: 4, year: 2026, income: 5000, expense: 2400, balance: 2600 })
+      expect(MockedService.prototype.monthlyTrend).toHaveBeenCalledWith('user-uuid-1', expect.objectContaining({ months: '2' }))
+    })
+  })
+
   describe('GET /api/transactions/export', () => {
     it('deve retornar CSV com token valido', async () => {
       MockedService.prototype.exportCsv.mockResolvedValue('\ufeff"Data";"Tipo"\n"2026-05-01";"Entrada"')

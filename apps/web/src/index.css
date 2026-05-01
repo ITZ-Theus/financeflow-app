@@ -589,6 +589,12 @@ select.input option {
   padding: 22px;
 }
 
+.trend-panel {
+  margin-bottom: 18px;
+  min-height: 342px;
+  padding: 22px;
+}
+
 .panel-heading {
   margin-bottom: 18px;
 }
@@ -616,6 +622,10 @@ select.input option {
   height: 250px;
   justify-content: center;
   gap: 14px;
+}
+
+.empty-state--compact {
+  height: 260px;
 }
 
 .empty-state__ring {

@@ -71,7 +71,7 @@ React form
 | --- | --- |
 | User | Owns all private financial data |
 | Category | User-scoped income or expense category with custom color and icon |
-| Transaction | Income or expense record, optionally linked to a category and recurrence group |
+| Transaction | Income or expense record, optionally linked to a category and recurrence group; also feeds monthly trend analytics |
 | Budget | Monthly spending limit for a user-owned expense category |
 | Goal | User-scoped financial target with progress and status |
 
@@ -165,6 +165,10 @@ Frontend tests cover:
 End-to-end tests use Playwright to validate a real browser journey with the demo account, including dashboard access and category management.
 
 GitHub Actions runs builds and tests for both applications on pushes and pull requests. A dedicated Playwright workflow runs E2E validation on pull requests and can also be triggered manually.
+
+## Analytics
+
+The transaction module exposes a monthly trend endpoint that returns income, expense and balance totals for a bounded window of recent months. The dashboard consumes this data through React Query and renders a six-month trend chart, while the service keeps the aggregation scoped to the authenticated user.
 
 ## Key Tradeoffs
 

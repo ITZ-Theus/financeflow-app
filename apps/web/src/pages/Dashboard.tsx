@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { AlertTriangle, ArrowUpRight, CheckCircle2, DollarSign, Plus, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
-import { Bar, BarChart, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useBudgets } from '../hooks/useBudgets'
-import { useSummary, useTransactions } from '../hooks/useTransactions'
+import { useMonthlyTrend, useSummary, useTransactions } from '../hooks/useTransactions'
 import { formatCompactCurrency, formatCurrency, formatDate } from '../utils/formatters'
 import type { BudgetStatus } from '../types'
 
@@ -21,6 +21,12 @@ const budgetStatusLabel: Record<BudgetStatus, string> = {
   safe: 'Dentro do limite',
   warning: 'Perto do limite',
   exceeded: 'Limite estourado',
+}
+
+const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function formatTrendLabel(month: number, year: number) {
+  return `${monthLabels[month - 1]}/${String(year).slice(-2)}`
 }
 
 function StatCard({
@@ -58,6 +64,7 @@ export function Dashboard() {
   const { data: summary } = useSummary({ month, year })
   const { data: recentTransactions } = useTransactions({ month, year, limit: 5 })
   const { data: budgets } = useBudgets({ month, year })
+  const { data: monthlyTrend = [] } = useMonthlyTrend(6)
   const expenseByCategory = summary?.expensesByCategory?.filter((c) => c.value > 0) || []
   const totalBudgeted = budgets?.reduce((sum, budget) => sum + Number(budget.amount), 0) ?? 0
   const totalBudgetSpent = budgets?.reduce((sum, budget) => sum + Number(budget.spent), 0) ?? 0
@@ -72,6 +79,10 @@ export function Dashboard() {
     { name: 'Saidas', value: -(summary?.expense || 0), fill: '#f43f5e' },
     { name: 'Saldo', value: summary?.balance || 0, fill: '#38bdf8' },
   ]
+  const trendData = monthlyTrend.map((item) => ({
+    ...item,
+    label: formatTrendLabel(item.month, item.year),
+  }))
 
   return (
     <div className="dashboard-screen animate-in" data-testid="dashboard-page">
@@ -105,6 +116,57 @@ export function Dashboard() {
           tone={(summary?.balance || 0) >= 0 ? 'cyan' : 'red'}
           icon={<DollarSign size={18} />}
         />
+      </section>
+
+      <section className="premium-panel trend-panel">
+        <div className="panel-heading">
+          <div>
+            <span>Historico</span>
+            <h3>Tendencia dos Ultimos 6 Meses</h3>
+          </div>
+          <ArrowUpRight size={18} />
+        </div>
+
+        {trendData.some((item) => item.income > 0 || item.expense > 0) ? (
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={trendData} margin={{ top: 16, right: 16, left: 18, bottom: 0 }}>
+              <defs>
+                <linearGradient id="incomeTrend" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="5%" stopColor="#2dd4bf" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#2dd4bf" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="expenseTrend" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="5%" stopColor="#fb7185" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#fb7185" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="balanceTrend" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="rgba(148, 163, 184, 0.08)" vertical={false} />
+              <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <YAxis
+                axisLine={false}
+                tickFormatter={(value) => formatCompactCurrency(Number(value))}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 11 }}
+                width={76}
+              />
+              <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.18)" />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v) => formatCurrency(Number(v))} />
+              <Area type="monotone" dataKey="income" name="Entradas" stroke="#2dd4bf" fill="url(#incomeTrend)" strokeWidth={2} />
+              <Area type="monotone" dataKey="expense" name="Saidas" stroke="#fb7185" fill="url(#expenseTrend)" strokeWidth={2} />
+              <Area type="monotone" dataKey="balance" name="Saldo" stroke="#38bdf8" fill="url(#balanceTrend)" strokeWidth={2} />
+              <Legend wrapperStyle={{ color: '#94a3b8', fontSize: 12 }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="empty-state empty-state--compact">
+            <div className="empty-state__ring" />
+            <span>Registre transacoes para visualizar sua tendencia financeira</span>
+          </div>
+        )}
       </section>
 
       <section className="charts-grid">
