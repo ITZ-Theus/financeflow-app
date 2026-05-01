@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import type { ReactNode } from 'react'
-import { ArrowUpRight, DollarSign, Plus, TrendingDown, TrendingUp } from 'lucide-react'
+import type { CSSProperties, ReactNode } from 'react'
+import { AlertTriangle, ArrowUpRight, CheckCircle2, DollarSign, Plus, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
 import { Bar, BarChart, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { useBudgets } from '../hooks/useBudgets'
 import { useSummary, useTransactions } from '../hooks/useTransactions'
 import { formatCompactCurrency, formatCurrency, formatDate } from '../utils/formatters'
+import type { BudgetStatus } from '../types'
 
 const COLORS = ['#2dd4bf', '#f43f5e', '#a3e635', '#f59e0b', '#38bdf8', '#e879f9']
 
@@ -13,6 +15,12 @@ const tooltipStyle = {
   borderRadius: 8,
   color: '#f8fafc',
   boxShadow: '0 18px 45px rgba(0, 0, 0, 0.35)',
+}
+
+const budgetStatusLabel: Record<BudgetStatus, string> = {
+  safe: 'Dentro do limite',
+  warning: 'Perto do limite',
+  exceeded: 'Limite estourado',
 }
 
 function StatCard({
@@ -49,7 +57,15 @@ export function Dashboard() {
 
   const { data: summary } = useSummary({ month, year })
   const { data: recentTransactions } = useTransactions({ month, year, limit: 5 })
+  const { data: budgets } = useBudgets({ month, year })
   const expenseByCategory = summary?.expensesByCategory?.filter((c) => c.value > 0) || []
+  const totalBudgeted = budgets?.reduce((sum, budget) => sum + Number(budget.amount), 0) ?? 0
+  const totalBudgetSpent = budgets?.reduce((sum, budget) => sum + Number(budget.spent), 0) ?? 0
+  const budgetUsage = totalBudgeted > 0 ? Math.round((totalBudgetSpent / totalBudgeted) * 100) : 0
+  const budgetsAtRisk = budgets
+    ?.filter((budget) => budget.status !== 'safe')
+    .sort((a, b) => b.percentage - a.percentage)
+    .slice(0, 3) ?? []
 
   const barData = [
     { name: 'Entradas', value: summary?.income || 0, fill: '#2dd4bf' },
@@ -150,6 +166,62 @@ export function Dashboard() {
             </div>
           )}
         </div>
+      </section>
+
+      <section className="premium-panel budget-health-panel">
+        <div className="panel-heading activity-panel__heading">
+          <div>
+            <span>Orcamento</span>
+            <h3>Saude dos Limites</h3>
+          </div>
+          <a href="/budgets" className="action-link">
+            <WalletCards size={15} />
+            Gerenciar
+          </a>
+        </div>
+
+        {budgets?.length ? (
+          <div className="budget-health-content">
+            <div className="budget-health-summary">
+              <div
+                className="budget-ring"
+                data-status={budgetUsage >= 100 ? 'exceeded' : budgetUsage >= 80 ? 'warning' : 'safe'}
+                style={{ '--budget-progress': `${Math.min(budgetUsage, 100)}%` } as CSSProperties}
+              >
+                <strong>{budgetUsage}%</strong>
+                <span>uso geral</span>
+              </div>
+              <div>
+                <p>{formatCurrency(totalBudgetSpent)} de {formatCurrency(totalBudgeted)}</p>
+                <span>{budgetsAtRisk.length ? `${budgetsAtRisk.length} categoria(s) precisam de atencao` : 'Todos os limites estao sob controle'}</span>
+              </div>
+            </div>
+
+            <div className="budget-alert-list">
+              {budgetsAtRisk.length === 0 && (
+                <div className="budget-alert-row" data-status="safe">
+                  <CheckCircle2 size={18} />
+                  <div>
+                    <p>Nenhum alerta neste mes</p>
+                    <span>Continue acompanhando suas categorias principais.</span>
+                  </div>
+                </div>
+              )}
+
+              {budgetsAtRisk.map((budget) => (
+                <div key={budget.id} className="budget-alert-row" data-status={budget.status}>
+                  <AlertTriangle size={18} />
+                  <div>
+                    <p>{budget.category.name}</p>
+                    <span>{budgetStatusLabel[budget.status]}: {budget.percentage.toFixed(0)}% usado, {formatCurrency(budget.remaining)} restante</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="empty-row">Crie orcamentos por categoria para acompanhar seus limites mensais</div>
+        )}
       </section>
 
       <section className="premium-panel activity-panel">
