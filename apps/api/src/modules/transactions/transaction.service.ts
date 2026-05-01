@@ -10,6 +10,9 @@ interface CreateTransactionDTO {
   date: string
   description?: string
   categoryId?: string | null
+  isRecurring?: boolean
+  recurrenceInterval?: 'monthly' | null
+  recurrenceEndDate?: string | null
 }
 
 type TransactionQuery = {
@@ -47,6 +50,40 @@ function escapeCsv(value: string | number | null | undefined): string {
 
 function formatCsvAmount(value: number | string): string {
   return Number(value).toFixed(2).replace('.', ',')
+}
+
+function parseDateOnly(date: string): Date {
+  return new Date(`${date}T00:00:00.000Z`)
+}
+
+function formatDateOnly(date: Date): string {
+  return date.toISOString().slice(0, 10)
+}
+
+function getLastDayOfMonth(year: number, monthIndex: number): number {
+  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate()
+}
+
+function addMonthsClamped(date: string, monthsToAdd: number): string {
+  const base = parseDateOnly(date)
+  const targetMonth = base.getUTCMonth() + monthsToAdd
+  const targetYear = base.getUTCFullYear() + Math.floor(targetMonth / 12)
+  const normalizedMonth = ((targetMonth % 12) + 12) % 12
+  const day = Math.min(base.getUTCDate(), getLastDayOfMonth(targetYear, normalizedMonth))
+
+  return formatDateOnly(new Date(Date.UTC(targetYear, normalizedMonth, day)))
+}
+
+function countMonthlyOccurrences(startDate: string, endDate: string): number {
+  let count = 0
+  let nextDate = addMonthsClamped(startDate, 1)
+
+  while (nextDate <= endDate) {
+    count += 1
+    nextDate = addMonthsClamped(startDate, count + 1)
+  }
+
+  return count
 }
 
 export class TransactionService {
@@ -124,8 +161,54 @@ export class TransactionService {
   }
 
   async create(userId: string, data: CreateTransactionDTO): Promise<Transaction> {
-    const transaction = this.repo.create({ ...data, userId })
-    return this.repo.save(transaction)
+    if (!data.isRecurring) {
+      const transaction = this.repo.create({
+        ...data,
+        isRecurring: false,
+        recurrenceInterval: null,
+        recurrenceEndDate: null,
+        parentTransactionId: null,
+        userId,
+      })
+      return this.repo.save(transaction)
+    }
+
+    if (!data.recurrenceEndDate) {
+      throw new AppError('Data final da recorrencia e obrigatoria', 400)
+    }
+
+    if (data.recurrenceEndDate < data.date) {
+      throw new AppError('Data final da recorrencia deve ser posterior a data inicial', 400)
+    }
+
+    const occurrences = countMonthlyOccurrences(data.date, data.recurrenceEndDate)
+    if (occurrences > 60) {
+      throw new AppError('Recorrencia limitada a 60 meses', 400)
+    }
+
+    const parent = await this.repo.save(this.repo.create({
+      ...data,
+      isRecurring: true,
+      recurrenceInterval: 'monthly',
+      userId,
+      parentTransactionId: null,
+    }))
+
+    if (occurrences > 0) {
+      const generated = Array.from({ length: occurrences }, (_, index) => this.repo.create({
+        ...data,
+        date: addMonthsClamped(data.date, index + 1),
+        isRecurring: true,
+        recurrenceInterval: 'monthly',
+        recurrenceEndDate: data.recurrenceEndDate,
+        parentTransactionId: parent.id,
+        userId,
+      }))
+
+      await this.repo.save(generated)
+    }
+
+    return parent
   }
 
   async update(userId: string, id: string, data: Partial<CreateTransactionDTO>): Promise<Transaction> {

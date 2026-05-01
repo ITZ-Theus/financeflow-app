@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Download, Pencil, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Pencil, Plus, Repeat, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import { exportTransactionsCsv, useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from '../hooks/useTransactions'
 import { toast } from '../store/toastStore'
@@ -37,6 +37,19 @@ const months = Array.from({ length: 12 }, (_, index) => ({
 
 const pageSize = 20
 
+function getInitialForm() {
+  return {
+    title: '',
+    amount: '',
+    type: 'expense' as 'income' | 'expense',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    categoryId: '',
+    isRecurring: false,
+    recurrenceEndDate: '',
+  }
+}
+
 export function Transactions() {
   const now = new Date()
   const [showForm, setShowForm] = useState(false)
@@ -48,14 +61,7 @@ export function Transactions() {
     type: '' as '' | TransactionType,
     categoryId: '',
   })
-  const [form, setForm] = useState({
-    title: '',
-    amount: '',
-    type: 'expense' as 'income' | 'expense',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    categoryId: '',
-  })
+  const [form, setForm] = useState(getInitialForm)
 
   const filterParams: TransactionFilters = {
     month: filters.month,
@@ -88,15 +94,23 @@ export function Transactions() {
     e.preventDefault()
     try {
       const payload = {
-        ...form,
+        title: form.title,
         amount: parseCurrencyInput(form.amount),
+        type: form.type,
+        date: form.date,
+        description: form.description,
         categoryId: form.categoryId || null,
       }
 
       if (editingId) {
         await updateMutation.mutateAsync({ id: editingId, ...payload })
       } else {
-        await createMutation.mutateAsync(payload)
+        await createMutation.mutateAsync({
+          ...payload,
+          isRecurring: form.isRecurring,
+          recurrenceInterval: form.isRecurring ? 'monthly' : null,
+          recurrenceEndDate: form.isRecurring ? form.recurrenceEndDate : null,
+        })
       }
 
       closeForm()
@@ -128,7 +142,7 @@ export function Transactions() {
 
   function openCreateForm() {
     setEditingId(null)
-    setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
+    setForm(getInitialForm())
     setShowForm(true)
   }
 
@@ -141,13 +155,15 @@ export function Transactions() {
       date: transaction.date,
       description: transaction.description || '',
       categoryId: transaction.categoryId || '',
+      isRecurring: false,
+      recurrenceEndDate: '',
     })
     setShowForm(true)
   }
 
   function closeForm() {
     setEditingId(null)
-    setForm({ title: '', amount: '', type: 'expense', date: new Date().toISOString().split('T')[0], description: '', categoryId: '' })
+    setForm(getInitialForm())
     setShowForm(false)
   }
 
@@ -286,7 +302,7 @@ export function Transactions() {
               <select
                 className="input"
                 value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value as 'income' | 'expense' })}
+                onChange={(e) => setForm({ ...form, type: e.target.value as 'income' | 'expense', categoryId: '' })}
               >
                 <option value="income">Entrada</option>
                 <option value="expense">Saida</option>
@@ -326,6 +342,36 @@ export function Transactions() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
+
+            {!editingId && (
+              <div className="recurrence-box">
+                <label className="recurrence-toggle">
+                  <input
+                    type="checkbox"
+                    checked={form.isRecurring}
+                    onChange={(e) => setForm({ ...form, isRecurring: e.target.checked })}
+                  />
+                  <span>
+                    <Repeat size={16} />
+                    Repetir mensalmente
+                  </span>
+                </label>
+
+                {form.isRecurring && (
+                  <div>
+                    <label className="label">Repetir ate</label>
+                    <input
+                      type="date"
+                      className="input"
+                      min={form.date}
+                      value={form.recurrenceEndDate}
+                      onChange={(e) => setForm({ ...form, recurrenceEndDate: e.target.value })}
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="form-actions">
               <button type="button" onClick={closeForm} className="btn-ghost">
@@ -368,6 +414,12 @@ export function Transactions() {
                 <div>
                   <p>{t.title}</p>
                   <span>{formatDate(t.date)} / {t.category?.name || 'Sem categoria'}</span>
+                  {t.isRecurring && (
+                    <small className="recurring-badge">
+                      <Repeat size={12} />
+                      Recorrente
+                    </small>
+                  )}
                 </div>
               </div>
               <div className="transaction-row__side">

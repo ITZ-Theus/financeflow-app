@@ -70,6 +70,7 @@ Frase boa:
 - Testes de frontend com Vitest e Testing Library.
 - Teste E2E com Playwright cobrindo login demo e gerenciamento de categoria.
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
+- Transacoes recorrentes mensais com geracao automatica e validacao de data final.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.
 
@@ -109,7 +110,7 @@ Frase boa:
 
 ### O que voce melhoraria?
 
-> Eu expandiria os testes E2E para cobrir transacoes, metas e orcamentos. Tambem adicionaria Sentry, exportacao CSV, transacoes recorrentes e alertas quando um orcamento estiver perto do limite.
+> Eu expandiria os testes E2E para cobrir transacoes, metas e orcamentos. Tambem adicionaria Sentry, mais opcoes de recorrencia alem da mensal e alertas quando um orcamento estiver perto do limite.
 
 ## Como Fazer Uma Demo Em 5 Minutos
 

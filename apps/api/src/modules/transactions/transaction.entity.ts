@@ -28,6 +28,18 @@ export class Transaction {
   @Column({ nullable: true })
   categoryId: string | null
 
+  @Column({ default: false })
+  isRecurring: boolean
+
+  @Column({ nullable: true })
+  recurrenceInterval: 'monthly' | null
+
+  @Column({ type: 'date', nullable: true })
+  recurrenceEndDate: string | null
+
+  @Column({ nullable: true })
+  parentTransactionId: string | null
+
   @Column()
   userId: string
 

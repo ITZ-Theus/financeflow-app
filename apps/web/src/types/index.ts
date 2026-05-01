@@ -26,6 +26,10 @@ export interface Transaction {
   description?: string | null
   categoryId?: string | null
   category?: Category | null
+  isRecurring?: boolean
+  recurrenceInterval?: 'monthly' | null
+  recurrenceEndDate?: string | null
+  parentTransactionId?: string | null
   userId: string
   createdAt?: string
 }

@@ -61,6 +61,70 @@ describe('TransactionService', () => {
         expect.objectContaining({ categoryId: 'cat-uuid-1' })
       )
     })
+
+    it('deve gerar transacoes mensais quando recorrente', async () => {
+      const parent = makeTransaction({
+        id: 'parent-transaction',
+        title: 'Assinatura',
+        amount: 59.9,
+        type: 'expense',
+        date: '2026-01-31',
+        isRecurring: true,
+        recurrenceInterval: 'monthly',
+        recurrenceEndDate: '2026-04-30',
+      })
+
+      repo.create.mockImplementation((data) => makeTransaction(data as any))
+      repo.save
+        .mockResolvedValueOnce(parent)
+        .mockResolvedValueOnce([])
+
+      const result = await service.create(USER_ID, {
+        title: 'Assinatura',
+        amount: 59.9,
+        type: 'expense',
+        date: '2026-01-31',
+        isRecurring: true,
+        recurrenceEndDate: '2026-04-30',
+      })
+
+      const generated = repo.save.mock.calls[1][0]
+
+      expect(result.id).toBe('parent-transaction')
+      expect(generated).toHaveLength(3)
+      expect(generated.map((transaction: any) => transaction.date)).toEqual([
+        '2026-02-28',
+        '2026-03-31',
+        '2026-04-30',
+      ])
+      expect(generated.every((transaction: any) => transaction.parentTransactionId === parent.id)).toBe(true)
+    })
+
+    it('deve exigir data final para recorrencia', async () => {
+      await expect(service.create(USER_ID, {
+        title: 'Aluguel',
+        amount: 2000,
+        type: 'expense',
+        date: '2026-01-05',
+        isRecurring: true,
+      })).rejects.toMatchObject({
+        statusCode: 400,
+        message: 'Data final da recorrencia e obrigatoria',
+      })
+    })
+
+    it('deve rejeitar recorrencia com data final antes da inicial', async () => {
+      await expect(service.create(USER_ID, {
+        title: 'Aluguel',
+        amount: 2000,
+        type: 'expense',
+        date: '2026-02-05',
+        isRecurring: true,
+        recurrenceEndDate: '2026-01-05',
+      })).rejects.toMatchObject({
+        statusCode: 400,
+      })
+    })
   })
 
   // ─── UPDATE ────────────────────────────────────────────────

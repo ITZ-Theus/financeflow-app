@@ -14,6 +14,7 @@ The project was built as a portfolio-grade application, with a typed React front
 
 - JWT authentication with protected API routes
 - Income and expense tracking
+- Monthly recurring transactions with automatic future entries
 - CSV export for transaction history
 - Category management for financial organization
 - Monthly category budgets with spending progress
@@ -79,6 +80,7 @@ financeflow/
 - Create, list, update and delete transactions
 - Income and expense transaction types
 - Optional category association
+- Monthly recurring transaction generation with end-date validation
 - Month, type and category filters for transaction history
 - Paginated transaction listing
 - CSV export for spreadsheet analysis and backup
@@ -309,7 +311,7 @@ The API test suite covers authentication, shared utilities, transaction business
 Current suites:
 
 ```txt
-API: 10 test suites, 79 tests
+API: 10 test suites, 89 tests
 Web: 4 test files, 11 tests
 E2E: demo login and category management flow
 ```
@@ -419,8 +421,8 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 
 ## Roadmap
 
-- Add recurring transactions
 - Add observability and production error tracking
+- Expand recurrence options beyond monthly transactions
 
 ## Author
 

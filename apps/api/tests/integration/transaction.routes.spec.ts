@@ -121,6 +121,34 @@ describe('Transaction Routes - /api/transactions', () => {
 
       expect(res.status).toBe(422)
     })
+
+    it('deve aceitar campos de recorrencia mensal', async () => {
+      const transaction = makeTransaction({ isRecurring: true, recurrenceEndDate: '2026-12-31' })
+      MockedService.prototype.create.mockResolvedValue(transaction)
+
+      const res = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({
+          title: 'Aluguel',
+          amount: 2200,
+          type: 'expense',
+          date: '2026-05-01',
+          isRecurring: true,
+          recurrenceInterval: 'monthly',
+          recurrenceEndDate: '2026-12-31',
+        })
+
+      expect(res.status).toBe(201)
+      expect(MockedService.prototype.create).toHaveBeenCalledWith(
+        'user-uuid-1',
+        expect.objectContaining({
+          isRecurring: true,
+          recurrenceInterval: 'monthly',
+          recurrenceEndDate: '2026-12-31',
+        })
+      )
+    })
   })
 
   describe('DELETE /api/transactions/:id', () => {

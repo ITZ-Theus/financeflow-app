@@ -855,6 +855,49 @@ select.input option {
   padding-top: 4px;
 }
 
+.recurrence-box {
+  background: rgba(8, 13, 24, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-column: 1 / -1;
+  padding: 14px;
+}
+
+.recurrence-toggle {
+  align-items: center;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 10px;
+}
+
+.recurrence-toggle input {
+  accent-color: var(--accent);
+  height: 16px;
+  width: 16px;
+}
+
+.recurrence-toggle span {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.recurring-badge {
+  align-items: center;
+  color: var(--accent);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  gap: 5px;
+  margin-top: 7px;
+  text-transform: uppercase;
+}
+
 .activity-list {
   min-height: 86px;
 }

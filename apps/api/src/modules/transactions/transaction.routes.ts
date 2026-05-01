@@ -10,6 +10,9 @@ const createSchema = z.object({
   date: z.string(),
   description: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
+  isRecurring: z.boolean().optional(),
+  recurrenceInterval: z.literal('monthly').nullable().optional(),
+  recurrenceEndDate: z.string().nullable().optional(),
 })
 
 type CreateTransactionInput = {
@@ -19,6 +22,9 @@ type CreateTransactionInput = {
   date: string
   description?: string
   categoryId?: string | null
+  isRecurring?: boolean
+  recurrenceInterval?: 'monthly' | null
+  recurrenceEndDate?: string | null
 }
 
 class TransactionController {

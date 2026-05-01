@@ -71,7 +71,7 @@ React form
 | --- | --- |
 | User | Owns all private financial data |
 | Category | User-scoped income or expense category with custom color and icon |
-| Transaction | Income or expense record, optionally linked to a category |
+| Transaction | Income or expense record, optionally linked to a category and recurrence group |
 | Budget | Monthly spending limit for a user-owned expense category |
 | Goal | User-scoped financial target with progress and status |
 
@@ -149,6 +149,7 @@ Backend tests cover:
 - authentication service behavior;
 - authentication middleware;
 - transaction service business rules;
+- recurring transaction generation and date validation;
 - budget progress calculation and category ownership rules;
 - category and goal behavior;
 - route-level integration flows;
@@ -180,6 +181,6 @@ GitHub Actions runs builds and tests for both applications on pushes and pull re
 
 - Expand Playwright coverage to include transaction and goal flows.
 - Error tracking with Sentry or a similar service.
-- Recurring transactions.
+- More recurrence intervals beyond monthly transactions.
 - Spending alerts when category budgets approach the limit.
 - Dashboard performance improvements with finer-grained code splitting.

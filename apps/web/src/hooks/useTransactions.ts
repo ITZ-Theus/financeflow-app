@@ -20,6 +20,9 @@ export interface CreateTransactionPayload {
   date: string
   description?: string
   categoryId?: string | null
+  isRecurring?: boolean
+  recurrenceInterval?: 'monthly' | null
+  recurrenceEndDate?: string | null
 }
 
 export interface UpdateTransactionPayload extends Partial<CreateTransactionPayload> {
