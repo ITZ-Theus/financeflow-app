@@ -859,6 +859,24 @@ select.input option {
   min-height: 86px;
 }
 
+.pagination-bar {
+  align-items: center;
+  border-top: 1px solid rgba(148, 163, 184, 0.13);
+  color: var(--text-muted);
+  display: flex;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 14px 22px;
+}
+
+.pagination-bar span {
+  min-width: 128px;
+  text-align: center;
+}
+
 .activity-row {
   border-bottom: 1px solid rgba(148, 163, 184, 0.09);
   padding: 16px 22px;
@@ -1005,6 +1023,15 @@ select.input option {
 
   .filter-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pagination-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination-bar button {
+    justify-content: center;
   }
 
   .activity-row {

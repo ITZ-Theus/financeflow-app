@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Download, Pencil, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight, Download, Pencil, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import { exportTransactionsCsv, useCreateTransaction, useDeleteTransaction, useTransactions, useUpdateTransaction } from '../hooks/useTransactions'
 import { toast } from '../store/toastStore'
@@ -35,10 +35,13 @@ const months = Array.from({ length: 12 }, (_, index) => ({
   label: new Intl.DateTimeFormat('pt-BR', { month: 'long' }).format(new Date(2026, index, 1)),
 }))
 
+const pageSize = 20
+
 export function Transactions() {
   const now = new Date()
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
   const [filters, setFilters] = useState({
     month: now.getMonth() + 1,
     year: now.getFullYear(),
@@ -54,12 +57,17 @@ export function Transactions() {
     categoryId: '',
   })
 
-  const transactionParams: TransactionFilters = {
-    limit: 20,
+  const filterParams: TransactionFilters = {
     month: filters.month,
     year: filters.year,
     ...(filters.type ? { type: filters.type } : {}),
     ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+  }
+
+  const transactionParams: TransactionFilters = {
+    ...filterParams,
+    page,
+    limit: pageSize,
   }
 
   const { data, isLoading } = useTransactions(transactionParams)
@@ -69,6 +77,12 @@ export function Transactions() {
   const deleteMutation = useDeleteTransaction()
   const [exporting, setExporting] = useState(false)
   const filterCategories = categories?.filter((category) => !filters.type || category.type === filters.type) ?? []
+  const totalPages = data?.totalPages || 1
+  const currentPage = data?.page || page
+
+  useEffect(() => {
+    setPage(1)
+  }, [filters.month, filters.year, filters.type, filters.categoryId])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -94,7 +108,7 @@ export function Transactions() {
   async function handleExport() {
     setExporting(true)
     try {
-      await exportTransactionsCsv(transactionParams)
+      await exportTransactionsCsv(filterParams)
       toast.success('Exportacao concluida', 'Suas transacoes foram baixadas em CSV.')
     } catch {
       toast.error('Erro ao exportar', 'Nao foi possivel gerar o arquivo CSV.')
@@ -331,7 +345,10 @@ export function Transactions() {
             <span>Historico</span>
             <h3>Movimentacoes filtradas</h3>
           </div>
-          <strong className="result-count">{data?.total ?? 0} registro(s)</strong>
+          <strong className="result-count">
+            {data?.total ?? 0} registro(s)
+            {data?.total ? ` / pagina ${currentPage} de ${totalPages}` : ''}
+          </strong>
         </div>
 
         <div className="activity-list">
@@ -377,6 +394,30 @@ export function Transactions() {
             </div>
           ))}
         </div>
+
+        {(data?.totalPages ?? 0) > 1 && (
+          <div className="pagination-bar">
+            <button
+              type="button"
+              className="btn-ghost inline-action"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={currentPage <= 1 || isLoading}
+            >
+              <ChevronLeft size={16} />
+              Anterior
+            </button>
+            <span>Pagina {currentPage} de {totalPages}</span>
+            <button
+              type="button"
+              className="btn-ghost inline-action"
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              disabled={currentPage >= totalPages || isLoading}
+            >
+              Proxima
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </section>
     </div>
   )
