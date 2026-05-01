@@ -72,6 +72,7 @@ Frase boa:
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
 - Transacoes recorrentes mensais com geracao automatica e validacao de data final.
 - Tendencia mensal de entradas, saidas e saldo calculada pela API e exibida na dashboard.
+- Cards de insight para taxa de economia, direcao dos gastos e maior categoria de despesa.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.
 

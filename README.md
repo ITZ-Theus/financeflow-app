@@ -19,7 +19,7 @@ The project was built as a portfolio-grade application, with a typed React front
 - Category management for financial organization
 - Monthly category budgets with spending progress
 - Financial goals with progress tracking
-- Monthly dashboard with summary cards, charts and six-month trend analysis
+- Monthly dashboard with summary cards, insight cards, charts and six-month trend analysis
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
@@ -107,6 +107,7 @@ financeflow/
 ### Dashboard
 
 - Monthly income, expense and balance summary
+- Insight cards for savings rate, spending direction and top expense category
 - Six-month trend chart for income, expenses and balance
 - Bar chart for cash flow overview
 - Expense distribution by category

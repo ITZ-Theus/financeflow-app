@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
-import { AlertTriangle, ArrowUpRight, CheckCircle2, DollarSign, Plus, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
+import { AlertTriangle, ArrowUpRight, CheckCircle2, DollarSign, Gauge, PiggyBank, Plus, Target, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useBudgets } from '../hooks/useBudgets'
 import { useMonthlyTrend, useSummary, useTransactions } from '../hooks/useTransactions'
@@ -29,16 +29,31 @@ function formatTrendLabel(month: number, year: number) {
   return `${monthLabels[month - 1]}/${String(year).slice(-2)}`
 }
 
+function getPercentChange(current: number, previous: number) {
+  if (previous === 0) return null
+  return ((current - previous) / Math.abs(previous)) * 100
+}
+
+function formatPercent(value: number | null) {
+  if (value === null) return 'Sem base anterior'
+  const signal = value > 0 ? '+' : ''
+  return `${signal}${value.toFixed(0)}% vs mes anterior`
+}
+
 function StatCard({
   label,
   value,
   tone,
   icon,
+  insight,
+  insightTone = 'neutral',
 }: {
   label: string
   value: string
   tone: 'green' | 'red' | 'cyan'
   icon: ReactNode
+  insight?: string
+  insightTone?: 'positive' | 'negative' | 'neutral'
 }) {
   return (
     <div className="premium-panel stat-card" data-tone={tone}>
@@ -48,9 +63,9 @@ function StatCard({
         <div className="stat-card__icon">{icon}</div>
       </div>
       <strong>{value}</strong>
-      <div className="stat-card__signal">
+      <div className="stat-card__signal" data-tone={insightTone}>
         <span />
-        <small>live</small>
+        <small>{insight || 'live'}</small>
       </div>
     </div>
   )
@@ -83,6 +98,15 @@ export function Dashboard() {
     ...item,
     label: formatTrendLabel(item.month, item.year),
   }))
+  const currentTrend = monthlyTrend[monthlyTrend.length - 1]
+  const previousTrend = monthlyTrend[monthlyTrend.length - 2]
+  const incomeChange = getPercentChange(currentTrend?.income ?? 0, previousTrend?.income ?? 0)
+  const expenseChange = getPercentChange(currentTrend?.expense ?? 0, previousTrend?.expense ?? 0)
+  const balanceChange = getPercentChange(currentTrend?.balance ?? 0, previousTrend?.balance ?? 0)
+  const savingsRate = (summary?.income || 0) > 0
+    ? Math.round(((summary?.income || 0) - (summary?.expense || 0)) / (summary?.income || 1) * 100)
+    : 0
+  const biggestExpense = [...expenseByCategory].sort((a, b) => b.value - a.value)[0]
 
   return (
     <div className="dashboard-screen animate-in" data-testid="dashboard-page">
@@ -103,19 +127,49 @@ export function Dashboard() {
           value={formatCurrency(summary?.income || 0)}
           tone="green"
           icon={<TrendingUp size={18} />}
+          insight={formatPercent(incomeChange)}
+          insightTone={incomeChange === null ? 'neutral' : incomeChange >= 0 ? 'positive' : 'negative'}
         />
         <StatCard
           label="Saidas"
           value={formatCurrency(summary?.expense || 0)}
           tone="red"
           icon={<TrendingDown size={18} />}
+          insight={formatPercent(expenseChange)}
+          insightTone={expenseChange === null ? 'neutral' : expenseChange <= 0 ? 'positive' : 'negative'}
         />
         <StatCard
           label="Saldo"
           value={formatCurrency(summary?.balance || 0)}
           tone={(summary?.balance || 0) >= 0 ? 'cyan' : 'red'}
           icon={<DollarSign size={18} />}
+          insight={formatPercent(balanceChange)}
+          insightTone={balanceChange === null ? 'neutral' : balanceChange >= 0 ? 'positive' : 'negative'}
         />
+      </section>
+
+      <section className="insights-grid">
+        <div className="premium-panel insight-card" data-tone={savingsRate >= 20 ? 'positive' : savingsRate >= 0 ? 'neutral' : 'negative'}>
+          <PiggyBank size={18} />
+          <div>
+            <span>Economia do mes</span>
+            <strong>{savingsRate}%</strong>
+          </div>
+        </div>
+        <div className="premium-panel insight-card" data-tone={expenseChange === null ? 'neutral' : expenseChange <= 0 ? 'positive' : 'negative'}>
+          <Gauge size={18} />
+          <div>
+            <span>Controle de gastos</span>
+            <strong>{expenseChange === null ? 'Sem historico' : expenseChange <= 0 ? 'Gastos em queda' : 'Gastos em alta'}</strong>
+          </div>
+        </div>
+        <div className="premium-panel insight-card" data-tone={biggestExpense ? 'neutral' : 'positive'}>
+          <Target size={18} />
+          <div>
+            <span>Maior categoria</span>
+            <strong>{biggestExpense ? `${biggestExpense.name} (${formatCurrency(biggestExpense.value)})` : 'Sem gastos'}</strong>
+          </div>
+        </div>
       </section>
 
       <section className="premium-panel trend-panel">
