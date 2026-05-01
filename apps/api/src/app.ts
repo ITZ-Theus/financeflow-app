@@ -18,6 +18,7 @@ export function createApp() {
   const app = express()
 
   app.set('trust proxy', 1)
+  app.set('etag', false)
   app.use(requestContext)
   app.use(requestLogger)
   app.use(helmet({
@@ -45,6 +46,11 @@ export function createApp() {
   })
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store')
+    next()
+  })
 
   app.use('/api/auth', authRateLimit, authRoutes)
   app.use('/api/transactions', transactionRoutes)

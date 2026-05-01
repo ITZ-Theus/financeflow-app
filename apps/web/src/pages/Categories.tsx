@@ -31,7 +31,7 @@ export function Categories() {
   const [form, setForm] = useState(initialForm)
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
 
-  const { data: categories, isLoading } = useCategories()
+  const { data: categories, isLoading, isError, error, refetch } = useCategories()
   const createMutation = useCreateCategory()
   const updateMutation = useUpdateCategory()
   const qc = useQueryClient()
@@ -191,7 +191,17 @@ export function Categories() {
 
       {isLoading && <p style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 13 }}>Carregando...</p>}
 
-      {income.length > 0 && (
+      {isError && (
+        <div className="premium-panel" style={{ padding: 22, textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p style={{ color: 'var(--text-primary)', fontWeight: 800, marginBottom: 6 }}>Nao foi possivel carregar categorias</p>
+          <p style={{ fontSize: 13, marginBottom: 16 }}>{getApiErrorMessage(error)}</p>
+          <button type="button" className="btn-primary" onClick={() => refetch()}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {!isError && income.length > 0 && (
         <CategorySection
           title="Entradas"
           tone="income"
@@ -201,7 +211,7 @@ export function Categories() {
         />
       )}
 
-      {expense.length > 0 && (
+      {!isError && expense.length > 0 && (
         <CategorySection
           title="Saidas"
           tone="expense"
@@ -211,7 +221,7 @@ export function Categories() {
         />
       )}
 
-      {categories?.length === 0 && !isLoading && (
+      {categories?.length === 0 && !isLoading && !isError && (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)', fontSize: 13 }}>
           Nenhuma categoria criada ainda. Crie uma para organizar suas transacoes!
         </div>

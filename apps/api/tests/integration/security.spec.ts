@@ -31,6 +31,13 @@ describe('Security middleware', () => {
     expect(res.headers['x-frame-options']).toBe('SAMEORIGIN')
   })
 
+  it('deve desabilitar cache em respostas da API autenticada', async () => {
+    const res = await request(app).post('/api/auth/login').send({ email: 'invalid@test.com' })
+
+    expect(res.headers['cache-control']).toBe('no-store')
+    expect(res.headers.etag).toBeUndefined()
+  })
+
   it('deve limitar excesso de tentativas nas rotas de autenticacao', async () => {
     let res: request.Response | undefined
 
