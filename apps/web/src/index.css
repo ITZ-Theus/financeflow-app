@@ -405,6 +405,13 @@ select.input option {
   margin-top: 8px;
 }
 
+.page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .status-chip {
   align-items: center;
   background: rgba(16, 24, 39, 0.74);
@@ -946,6 +953,15 @@ select.input option {
   .page-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .page-header__actions {
+    width: 100%;
+  }
+
+  .page-header__actions > button {
+    flex: 1;
+    justify-content: center;
   }
 
   .stat-card strong {

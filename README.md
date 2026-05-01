@@ -14,6 +14,7 @@ The project was built as a portfolio-grade application, with a typed React front
 
 - JWT authentication with protected API routes
 - Income and expense tracking
+- CSV export for transaction history
 - Category management for financial organization
 - Monthly category budgets with spending progress
 - Financial goals with progress tracking
@@ -80,6 +81,7 @@ financeflow/
 - Optional category association
 - Monthly filtering support in the API
 - Paginated transaction listing
+- CSV export for spreadsheet analysis and backup
 
 ### Categories
 
@@ -123,6 +125,7 @@ Local:      http://localhost:3333/api
 | `POST` | `/auth/login` | Authenticate a user |
 | `GET` | `/transactions` | List authenticated user's transactions |
 | `GET` | `/transactions/summary` | Get monthly financial summary |
+| `GET` | `/transactions/export` | Export transactions as CSV |
 | `POST` | `/transactions` | Create a transaction |
 | `PUT` | `/transactions/:id` | Update a transaction |
 | `DELETE` | `/transactions/:id` | Delete a transaction |
@@ -416,7 +419,6 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 
 ## Roadmap
 
-- Add CSV export for transactions
 - Add recurring transactions
 - Add observability and production error tracking
 

@@ -36,6 +36,28 @@ export function useSummary(params?: Pick<TransactionFilters, 'month' | 'year'>) 
   })
 }
 
+function getFilename(disposition?: string): string {
+  const match = disposition?.match(/filename="?([^"]+)"?/)
+  return match?.[1] || 'financeflow-transactions.csv'
+}
+
+export async function exportTransactionsCsv(params?: TransactionFilters) {
+  const response = await api.get('/transactions/export', {
+    params,
+    responseType: 'blob',
+  })
+
+  const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = getFilename(response.headers['content-disposition'])
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export function useCreateTransaction() {
   const qc = useQueryClient()
   return useMutation(

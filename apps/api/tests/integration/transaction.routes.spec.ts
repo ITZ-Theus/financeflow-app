@@ -66,6 +66,21 @@ describe('Transaction Routes - /api/transactions', () => {
     })
   })
 
+  describe('GET /api/transactions/export', () => {
+    it('deve retornar CSV com token valido', async () => {
+      MockedService.prototype.exportCsv.mockResolvedValue('\ufeff"Data";"Tipo"\n"2026-05-01";"Entrada"')
+
+      const res = await request(app)
+        .get('/api/transactions/export')
+        .set('Authorization', `Bearer ${makeToken()}`)
+
+      expect(res.status).toBe(200)
+      expect(res.headers['content-type']).toContain('text/csv')
+      expect(res.headers['content-disposition']).toContain('financeflow-transactions')
+      expect(res.text).toContain('"Data";"Tipo"')
+    })
+  })
+
   describe('POST /api/transactions', () => {
     it('deve criar transação com dados válidos', async () => {
       const transaction = makeTransaction()

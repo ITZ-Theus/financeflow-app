@@ -34,6 +34,15 @@ class TransactionController {
     return res.json(result)
   }
 
+  async export(req: AuthRequest, res: Response) {
+    const csv = await this.service.exportCsv(req.userId!, req.query)
+    const timestamp = new Date().toISOString().slice(0, 10)
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="financeflow-transactions-${timestamp}.csv"`)
+    return res.status(200).send(csv)
+  }
+
   async store(req: AuthRequest, res: Response) {
     const data = createSchema.parse(req.body) as CreateTransactionInput
     const transaction = await this.service.create(req.userId!, data)
@@ -58,6 +67,7 @@ const controller = new TransactionController()
 router.use(authMiddleware)
 router.get('/', (req, res) => controller.index(req as AuthRequest, res))
 router.get('/summary', (req, res) => controller.summary(req as AuthRequest, res))
+router.get('/export', (req, res) => controller.export(req as AuthRequest, res))
 router.post('/', (req, res) => controller.store(req as AuthRequest, res))
 router.put('/:id', (req, res) => controller.update(req as AuthRequest, res))
 router.delete('/:id', (req, res) => controller.destroy(req as AuthRequest, res))

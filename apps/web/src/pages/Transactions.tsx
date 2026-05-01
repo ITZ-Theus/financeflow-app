@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { Download, Plus, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
-import { useCreateTransaction, useDeleteTransaction, useTransactions } from '../hooks/useTransactions'
+import { exportTransactionsCsv, useCreateTransaction, useDeleteTransaction, useTransactions } from '../hooks/useTransactions'
+import { toast } from '../store/toastStore'
 import { formatCurrency, formatDate } from '../utils/formatters'
 
 function formatCurrencyInput(value: string): string {
@@ -35,6 +36,7 @@ export function Transactions() {
   const { data: categories } = useCategories()
   const createMutation = useCreateTransaction()
   const deleteMutation = useDeleteTransaction()
+  const [exporting, setExporting] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -51,6 +53,18 @@ export function Transactions() {
     }
   }
 
+  async function handleExport() {
+    setExporting(true)
+    try {
+      await exportTransactionsCsv()
+      toast.success('Exportacao concluida', 'Suas transacoes foram baixadas em CSV.')
+    } catch {
+      toast.error('Erro ao exportar', 'Nao foi possivel gerar o arquivo CSV.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="dashboard-screen animate-in">
       <header className="page-header">
@@ -59,13 +73,24 @@ export function Transactions() {
           <h2>Transacoes</h2>
           <p>Gerencie suas entradas e saidas</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="btn-primary inline-action"
-        >
-          <Plus size={16} />
-          Nova Transacao
-        </button>
+        <div className="page-header__actions">
+          <button
+            type="button"
+            onClick={handleExport}
+            className="btn-ghost inline-action"
+            disabled={exporting}
+          >
+            <Download size={16} />
+            {exporting ? 'Exportando...' : 'Exportar CSV'}
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="btn-primary inline-action"
+          >
+            <Plus size={16} />
+            Nova Transacao
+          </button>
+        </div>
       </header>
 
       {showForm && (

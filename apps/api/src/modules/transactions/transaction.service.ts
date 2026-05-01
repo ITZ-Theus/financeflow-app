@@ -12,6 +12,13 @@ interface CreateTransactionDTO {
   categoryId?: string
 }
 
+type TransactionQuery = {
+  month?: string | number
+  year?: string | number
+  type?: 'income' | 'expense'
+  categoryId?: string
+}
+
 function getMonthRange(query: any) {
   const month = Number(query.month)
   const year = Number(query.year)
@@ -33,11 +40,19 @@ function roundMoney(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100
 }
 
+function escapeCsv(value: string | number | null | undefined): string {
+  const normalized = String(value ?? '').replace(/\r?\n/g, ' ')
+  return `"${normalized.replace(/"/g, '""')}"`
+}
+
+function formatCsvAmount(value: number | string): string {
+  return Number(value).toFixed(2).replace('.', ',')
+}
+
 export class TransactionService {
   private repo = AppDataSource.getRepository(Transaction)
 
-  async findAll(userId: string, query: any): Promise<PaginatedResult<Transaction>> {
-    const { page, limit } = getPaginationParams(query)
+  private buildFilteredQuery(userId: string, query: TransactionQuery = {}) {
     const qb = this.repo.createQueryBuilder('t')
       .leftJoinAndSelect('t.category', 'category')
       .where('t.userId = :userId', { userId })
@@ -49,20 +64,20 @@ export class TransactionService {
       qb.andWhere('t.date >= :startDate AND t.date < :endDate', range)
     }
 
+    return qb
+  }
+
+  async findAll(userId: string, query: any): Promise<PaginatedResult<Transaction>> {
+    const { page, limit } = getPaginationParams(query)
+    const qb = this.buildFilteredQuery(userId, query)
+
     qb.orderBy('t.date', 'DESC').skip((page - 1) * limit).take(limit)
     const [data, total] = await qb.getManyAndCount()
     return { data, total, page, totalPages: Math.ceil(total / limit) }
   }
 
   async summary(userId: string, query: any) {
-    const qb = this.repo.createQueryBuilder('t')
-      .leftJoinAndSelect('t.category', 'category')
-      .where('t.userId = :userId', { userId })
-
-    const range = getMonthRange(query)
-    if (range) {
-      qb.andWhere('t.date >= :startDate AND t.date < :endDate', range)
-    }
+    const qb = this.buildFilteredQuery(userId, query)
 
     const transactions = await qb.getMany()
     const income  = roundMoney(transactions.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0))
@@ -87,6 +102,25 @@ export class TransactionService {
     )
 
     return { income, expense, balance: roundMoney(income - expense), expensesByCategory }
+  }
+
+  async exportCsv(userId: string, query: TransactionQuery = {}): Promise<string> {
+    const transactions = await this.buildFilteredQuery(userId, query)
+      .orderBy('t.date', 'DESC')
+      .addOrderBy('t.createdAt', 'DESC')
+      .getMany()
+
+    const header = ['Data', 'Tipo', 'Titulo', 'Categoria', 'Descricao', 'Valor'].map(escapeCsv).join(';')
+    const rows = transactions.map((transaction) => [
+      transaction.date,
+      transaction.type === 'income' ? 'Entrada' : 'Saida',
+      transaction.title,
+      transaction.category?.name || 'Sem categoria',
+      transaction.description || '',
+      formatCsvAmount(transaction.amount),
+    ].map(escapeCsv).join(';'))
+
+    return ['\ufeff' + header, ...rows].join('\n')
   }
 
   async create(userId: string, data: CreateTransactionDTO): Promise<Transaction> {

@@ -263,4 +263,39 @@ describe('TransactionService', () => {
       expect(result.totalPages).toBe(1)
     })
   })
+
+  describe('exportCsv', () => {
+    it('deve exportar transacoes filtradas em CSV', async () => {
+      const transactions = [
+        makeTransaction({
+          title: 'Mercado "Central"',
+          type: 'expense',
+          amount: 123.45,
+          date: '2026-05-01',
+          description: 'Compra do mes',
+          categoryId: 'cat-food',
+          category: { id: 'cat-food', name: 'Alimentacao', color: '#f59e0b' } as any,
+        }),
+      ]
+
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(transactions),
+      }
+      repo.createQueryBuilder.mockReturnValue(qb)
+
+      const csv = await service.exportCsv(USER_ID, { month: 5, year: 2026 })
+
+      expect(qb.andWhere).toHaveBeenCalledWith('t.date >= :startDate AND t.date < :endDate', {
+        startDate: '2026-05-01',
+        endDate: '2026-06-01',
+      })
+      expect(csv).toContain('"Data";"Tipo";"Titulo";"Categoria";"Descricao";"Valor"')
+      expect(csv).toContain('"2026-05-01";"Saida";"Mercado ""Central""";"Alimentacao";"Compra do mes";"123,45"')
+    })
+  })
 })

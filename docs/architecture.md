@@ -180,6 +180,6 @@ GitHub Actions runs builds and tests for both applications on pushes and pull re
 
 - Expand Playwright coverage to include transaction and goal flows.
 - Error tracking with Sentry or a similar service.
-- CSV export and recurring transactions.
+- Recurring transactions.
 - Spending alerts when category budgets approach the limit.
 - Dashboard performance improvements with finer-grained code splitting.
