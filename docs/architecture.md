@@ -179,7 +179,7 @@ The transaction module exposes a monthly trend endpoint that returns income, exp
 | React Query | Reduces manual async state management and keeps API data consistent |
 | Zustand | Lightweight client state for auth and notifications |
 | Docker Compose | Reproducible local environment with API, Web and PostgreSQL |
-| Demo seed | Makes portfolio review easier without requiring manual data entry |
+| Demo seed | Makes portfolio review easier with realistic multi-month data and no manual setup |
 
 ## Future Improvements
 

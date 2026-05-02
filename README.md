@@ -300,7 +300,7 @@ Production should also run migrations before serving traffic. The API enables st
 
 ## Demo Data
 
-The repository includes an idempotent demo seed for portfolio reviewers. It creates a `FinanceFlow Demo` user, category set, current-month transactions, budgets and goals. The seed can be run manually:
+The repository includes an idempotent demo seed for portfolio reviewers. It creates a `FinanceFlow Demo` user, realistic categories, six months of transaction history, current-month budgets and goals. The seed can be run manually:
 
 ```bash
 npm run seed:demo

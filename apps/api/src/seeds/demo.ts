@@ -31,40 +31,79 @@ type DemoBudget = {
 }
 
 const categories: DemoCategory[] = [
-  { name: 'Salary', color: '#10b981', icon: 'briefcase', type: 'income' },
+  { name: 'Salario', color: '#10b981', icon: 'briefcase', type: 'income' },
   { name: 'Freelance', color: '#38bdf8', icon: 'laptop', type: 'income' },
-  { name: 'Housing', color: '#f97316', icon: 'home', type: 'expense' },
-  { name: 'Food', color: '#f59e0b', icon: 'shopping-cart', type: 'expense' },
-  { name: 'Transport', color: '#8b5cf6', icon: 'car', type: 'expense' },
-  { name: 'Health', color: '#ec4899', icon: 'pill', type: 'expense' },
-  { name: 'Education', color: '#06b6d4', icon: 'book-open', type: 'expense' },
-]
-
-const transactions: DemoTransaction[] = [
-  { title: 'Monthly salary', amount: 8200, type: 'income', day: 2, categoryName: 'Salary' },
-  { title: 'API landing page project', amount: 1800, type: 'income', day: 8, categoryName: 'Freelance' },
-  { title: 'Rent payment', amount: 2100, type: 'expense', day: 5, categoryName: 'Housing' },
-  { title: 'Groceries', amount: 486.75, type: 'expense', day: 9, categoryName: 'Food' },
-  { title: 'Fuel and rides', amount: 320.4, type: 'expense', day: 13, categoryName: 'Transport' },
-  { title: 'Medication', amount: 92.9, type: 'expense', day: 17, categoryName: 'Health' },
-  { title: 'Advanced TypeScript course', amount: 229.9, type: 'expense', day: 21, categoryName: 'Education' },
-  { title: 'Restaurant', amount: 168.3, type: 'expense', day: 24, categoryName: 'Food' },
+  { name: 'Moradia', color: '#f97316', icon: 'home', type: 'expense' },
+  { name: 'Mercado', color: '#f59e0b', icon: 'shopping-cart', type: 'expense' },
+  { name: 'Transporte', color: '#8b5cf6', icon: 'car', type: 'expense' },
+  { name: 'Saude', color: '#ec4899', icon: 'pill', type: 'expense' },
+  { name: 'Educacao', color: '#06b6d4', icon: 'book-open', type: 'expense' },
+  { name: 'Lazer', color: '#22c55e', icon: 'music', type: 'expense' },
+  { name: 'Assinaturas', color: '#64748b', icon: 'smartphone', type: 'expense' },
+  { name: 'Investimentos', color: '#14b8a6', icon: 'wallet', type: 'expense' },
 ]
 
 const budgets: DemoBudget[] = [
-  { categoryName: 'Food', amount: 900 },
-  { categoryName: 'Transport', amount: 500 },
-  { categoryName: 'Health', amount: 350 },
-  { categoryName: 'Education', amount: 450 },
+  { categoryName: 'Mercado', amount: 1400 },
+  { categoryName: 'Transporte', amount: 650 },
+  { categoryName: 'Saude', amount: 450 },
+  { categoryName: 'Educacao', amount: 550 },
+  { categoryName: 'Lazer', amount: 700 },
+  { categoryName: 'Assinaturas', amount: 220 },
 ]
 
-function getDateInCurrentMonth(day: number): string {
-  const now = new Date()
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+function getDateInMonth(year: number, monthIndex: number, day: number): string {
+  const lastDay = new Date(year, monthIndex + 1, 0).getDate()
   const safeDay = Math.min(day, lastDay)
-  const date = new Date(Date.UTC(now.getFullYear(), now.getMonth(), safeDay))
+  const date = new Date(Date.UTC(year, monthIndex, safeDay))
 
   return date.toISOString().slice(0, 10)
+}
+
+function getMonthByOffset(offset: number) {
+  const now = new Date()
+  const date = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+
+  return {
+    year: date.getFullYear(),
+    monthIndex: date.getMonth(),
+    month: date.getMonth() + 1,
+  }
+}
+
+function getDemoTransactionsForMonth(offset: number): DemoTransaction[] {
+  const now = new Date()
+  const isCurrentMonth = offset === 0
+  const currentDay = now.getDate()
+  const incomeBoost = offset === -1 ? 900 : offset === -3 ? 500 : 0
+  const expenseBoost = offset === -2 ? 260 : offset === -4 ? 180 : 0
+
+  const items: DemoTransaction[] = [
+    { title: 'Salario mensal', amount: 8200, type: 'income', day: 1, categoryName: 'Salario' },
+    { title: 'Projeto freelance', amount: 1650 + incomeBoost, type: 'income', day: 12, categoryName: 'Freelance' },
+    { title: 'Aluguel', amount: 2400, type: 'expense', day: 2, categoryName: 'Moradia' },
+    { title: 'Condominio e energia', amount: 520 + expenseBoost, type: 'expense', day: 6, categoryName: 'Moradia' },
+    { title: 'Compra do mes', amount: 760 + expenseBoost, type: 'expense', day: 7, categoryName: 'Mercado' },
+    { title: 'Reposicao de mercado', amount: 285.9, type: 'expense', day: 18, categoryName: 'Mercado' },
+    { title: 'Combustivel e apps', amount: 390 + offset * -12, type: 'expense', day: 10, categoryName: 'Transporte' },
+    { title: 'Consulta e farmacia', amount: offset === -1 ? 420 : 185.4, type: 'expense', day: 16, categoryName: 'Saude' },
+    { title: 'Curso e livros', amount: offset === -3 ? 620 : 249.9, type: 'expense', day: 20, categoryName: 'Educacao' },
+    { title: 'Streaming e ferramentas', amount: 187.8, type: 'expense', day: 5, categoryName: 'Assinaturas' },
+    { title: 'Restaurante e cinema', amount: 310 + expenseBoost, type: 'expense', day: 24, categoryName: 'Lazer' },
+    { title: 'Aporte em renda fixa', amount: offset === 0 ? 900 : 1200, type: 'expense', day: 26, categoryName: 'Investimentos' },
+  ]
+
+  if (offset === -5) {
+    items.push({ title: 'Bonus trimestral', amount: 1300, type: 'income', day: 15, categoryName: 'Freelance' })
+  }
+
+  if (!isCurrentMonth) {
+    return items
+  }
+
+  return items
+    .filter((item) => item.day <= currentDay || item.day <= 12)
+    .map((item) => ({ ...item, day: Math.min(item.day, Math.max(currentDay, 2)) }))
 }
 
 async function resetDemoData(userId: string) {
@@ -108,17 +147,21 @@ export async function seedDemoData() {
     savedCategories.set(category.name, category)
   }
 
-  for (const item of transactions) {
-    const category = savedCategories.get(item.categoryName)
-    await transactionRepo.save(transactionRepo.create({
-      title: item.title,
-      amount: item.amount,
-      type: item.type,
-      date: getDateInCurrentMonth(item.day),
-      description: item.description || null,
-      categoryId: category?.id || null,
-      userId: user.id,
-    }))
+  for (let offset = -5; offset <= 0; offset += 1) {
+    const { year, monthIndex } = getMonthByOffset(offset)
+
+    for (const item of getDemoTransactionsForMonth(offset)) {
+      const category = savedCategories.get(item.categoryName)
+      await transactionRepo.save(transactionRepo.create({
+        title: item.title,
+        amount: Math.round(item.amount * 100) / 100,
+        type: item.type,
+        date: getDateInMonth(year, monthIndex, item.day),
+        description: item.description || null,
+        categoryId: category?.id || null,
+        userId: user.id,
+      }))
+    }
   }
 
   const now = new Date()
@@ -137,19 +180,27 @@ export async function seedDemoData() {
 
   await goalRepo.save([
     goalRepo.create({
-      title: 'Emergency fund',
+      title: 'Reserva de emergencia',
       targetAmount: 25000,
-      currentAmount: 14250,
-      deadline: getDateInCurrentMonth(28),
+      currentAmount: 16850,
+      deadline: getDateInMonth(now.getFullYear(), now.getMonth() + 4, 15),
       status: 'active',
       userId: user.id,
     }),
     goalRepo.create({
-      title: 'International workstation',
+      title: 'Setup para trabalho remoto',
       targetAmount: 18000,
       currentAmount: 18000,
-      deadline: getDateInCurrentMonth(20),
+      deadline: getDateInMonth(now.getFullYear(), now.getMonth() - 1, 20),
       status: 'completed',
+      userId: user.id,
+    }),
+    goalRepo.create({
+      title: 'Viagem internacional',
+      targetAmount: 12000,
+      currentAmount: 3850,
+      deadline: getDateInMonth(now.getFullYear(), now.getMonth() + 8, 10),
+      status: 'active',
       userId: user.id,
     }),
   ])
