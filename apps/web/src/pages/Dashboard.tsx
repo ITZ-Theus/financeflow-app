@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { AlertTriangle, ArrowUpRight, CheckCircle2, DollarSign, Gauge, PiggyBank, Plus, Target, TrendingDown, TrendingUp, WalletCards } from 'lucide-react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useBudgets } from '../hooks/useBudgets'
@@ -66,6 +66,32 @@ function StatCard({
       <div className="stat-card__signal" data-tone={insightTone}>
         <span />
         <small>{insight || 'live'}</small>
+      </div>
+    </div>
+  )
+}
+
+function BudgetUsageRing({ value, status }: { value: number; status: 'safe' | 'warning' | 'exceeded' }) {
+  const normalizedValue = Math.max(0, Math.min(value, 100))
+  const circumference = 2 * Math.PI * 39
+  const dashOffset = circumference - (normalizedValue / 100) * circumference
+
+  return (
+    <div className="budget-ring" data-status={status}>
+      <svg className="budget-ring__chart" viewBox="0 0 96 96" aria-hidden="true">
+        <circle className="budget-ring__track" cx="48" cy="48" r="39" />
+        <circle
+          className="budget-ring__progress"
+          cx="48"
+          cy="48"
+          r="39"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+        />
+      </svg>
+      <div className="budget-ring__content">
+        <strong>{value}%</strong>
+        <span>uso geral</span>
       </div>
     </div>
   )
@@ -299,14 +325,10 @@ export function Dashboard() {
         {budgets?.length ? (
           <div className="budget-health-content">
             <div className="budget-health-summary">
-              <div
-                className="budget-ring"
-                data-status={budgetUsage >= 100 ? 'exceeded' : budgetUsage >= 80 ? 'warning' : 'safe'}
-                style={{ '--budget-progress': `${Math.min(budgetUsage, 100)}%` } as CSSProperties}
-              >
-                <strong>{budgetUsage}%</strong>
-                <span>uso geral</span>
-              </div>
+              <BudgetUsageRing
+                value={budgetUsage}
+                status={budgetUsage >= 100 ? 'exceeded' : budgetUsage >= 80 ? 'warning' : 'safe'}
+              />
               <div>
                 <p>{formatCurrency(totalBudgetSpent)} de {formatCurrency(totalBudgeted)}</p>
                 <span>{budgetsAtRisk.length ? `${budgetsAtRisk.length} categoria(s) precisam de atencao` : 'Todos os limites estao sob controle'}</span>
