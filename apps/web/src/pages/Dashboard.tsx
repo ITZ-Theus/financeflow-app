@@ -71,27 +71,17 @@ function StatCard({
   )
 }
 
-function BudgetUsageRing({ value, status }: { value: number; status: 'safe' | 'warning' | 'exceeded' }) {
+function BudgetUsageMeter({ value, status }: { value: number; status: 'safe' | 'warning' | 'exceeded' }) {
   const normalizedValue = Math.max(0, Math.min(value, 100))
-  const circumference = 2 * Math.PI * 39
-  const dashOffset = circumference - (normalizedValue / 100) * circumference
 
   return (
-    <div className="budget-ring" data-status={status}>
-      <svg className="budget-ring__chart" viewBox="0 0 96 96" aria-hidden="true">
-        <circle className="budget-ring__track" cx="48" cy="48" r="39" />
-        <circle
-          className="budget-ring__progress"
-          cx="48"
-          cy="48"
-          r="39"
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
-        />
-      </svg>
-      <div className="budget-ring__content">
+    <div className="budget-meter" data-status={status}>
+      <div className="budget-meter__top">
         <strong>{value}%</strong>
         <span>uso geral</span>
+      </div>
+      <div className="budget-meter__track" aria-hidden="true">
+        <span style={{ width: `${normalizedValue}%` }} />
       </div>
     </div>
   )
@@ -325,7 +315,7 @@ export function Dashboard() {
         {budgets?.length ? (
           <div className="budget-health-content">
             <div className="budget-health-summary">
-              <BudgetUsageRing
+              <BudgetUsageMeter
                 value={budgetUsage}
                 status={budgetUsage >= 100 ? 'exceeded' : budgetUsage >= 80 ? 'warning' : 'safe'}
               />
