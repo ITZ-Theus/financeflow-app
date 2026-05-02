@@ -38,6 +38,16 @@ describe('Security middleware', () => {
     expect(res.headers.etag).toBeUndefined()
   })
 
+  it('deve liberar CORS para origem local em desenvolvimento', async () => {
+    const res = await request(app)
+      .options('/api/categories')
+      .set('Origin', 'http://localhost:5173')
+      .set('Access-Control-Request-Method', 'GET')
+
+    expect(res.status).toBe(204)
+    expect(res.headers['access-control-allow-origin']).toBe('http://localhost:5173')
+  })
+
   it('deve limitar excesso de tentativas nas rotas de autenticacao', async () => {
     let res: request.Response | undefined
 

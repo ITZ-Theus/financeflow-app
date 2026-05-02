@@ -29,6 +29,25 @@ function getOrigins(value?: string): string[] {
     .filter(Boolean)
 }
 
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values))
+}
+
+function getCorsOrigins(value?: string): string[] {
+  const configuredOrigins = getOrigins(value)
+
+  if (isProduction) {
+    return configuredOrigins
+  }
+
+  return unique([
+    ...configuredOrigins,
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://host.docker.internal:5173',
+  ])
+}
+
 const jwtSecret = getRequiredProductionValue(
   'JWT_SECRET',
   process.env.JWT_SECRET
@@ -41,7 +60,7 @@ export const env = {
   nodeEnv,
   isProduction,
   webUrl: process.env.WEB_URL || '',
-  corsOrigins: getOrigins(process.env.WEB_URL),
+  corsOrigins: getCorsOrigins(process.env.WEB_URL),
 
   jwt: {
     secret: jwtSecret,
