@@ -162,7 +162,7 @@ Frontend tests cover:
 - category icon rendering;
 - toast notification behavior.
 
-End-to-end tests use Playwright to validate real browser journeys with the demo account, including dashboard access, category management and transaction create/edit/delete flows.
+End-to-end tests use Playwright to validate real browser journeys with the demo account, including dashboard access, category management, transaction create/edit/delete and budget create/delete flows.
 
 GitHub Actions runs builds and tests for both applications on pushes and pull requests. A dedicated Playwright workflow runs E2E validation on pull requests and can also be triggered manually.
 
@@ -183,7 +183,7 @@ The transaction module exposes a monthly trend endpoint that returns income, exp
 
 ## Future Improvements
 
-- Expand Playwright coverage to include budget and goal flows.
+- Expand Playwright coverage to include goal flows.
 - Error tracking with Sentry or a similar service.
 - More recurrence intervals beyond monthly transactions.
 - Spending alerts when category budgets approach the limit.

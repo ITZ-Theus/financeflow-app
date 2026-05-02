@@ -316,8 +316,8 @@ Current suites:
 
 ```txt
 API: 10 test suites, 92 tests
-Web: 4 test files, 11 tests
-E2E: demo login, category management and transaction lifecycle flows
+Web: 5 test files, 15 tests
+E2E: demo login, category management, transaction lifecycle and budget flows
 ```
 
 Run all API tests:

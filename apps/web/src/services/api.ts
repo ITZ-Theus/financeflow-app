@@ -23,6 +23,10 @@ export function resolveApiBaseUrl(
     return LOCAL_API_URL
   }
 
+  if (browserHost === 'host.docker.internal') {
+    return apiUrl
+  }
+
   return PRODUCTION_API_URL
 }
 

@@ -58,14 +58,14 @@ export function Budgets() {
   const usage = totalBudgeted > 0 ? Math.round((totalSpent / totalBudgeted) * 100) : 0
 
   return (
-    <div className="dashboard-screen animate-in">
+    <div className="dashboard-screen animate-in" data-testid="budgets-page">
       <header className="page-header">
         <div>
           <span className="page-kicker">Planejamento mensal</span>
           <h2>Orcamentos</h2>
           <p>Defina limites por categoria e acompanhe seus gastos</p>
         </div>
-        <button className="btn-primary inline-action" onClick={() => setShowForm(true)}>
+        <button className="btn-primary inline-action" onClick={() => setShowForm(true)} data-testid="new-budget-button">
           <Plus size={16} />
           Novo Orcamento
         </button>
@@ -79,7 +79,7 @@ export function Budgets() {
 
       {showForm && (
         <Modal title="Novo Orcamento" onClose={() => setShowForm(false)} maxWidth={440}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-testid="budget-form">
             <div>
               <label className="label">Categoria de saida</label>
               <select
@@ -87,6 +87,7 @@ export function Budgets() {
                 value={form.categoryId}
                 onChange={(e) => setForm((current) => ({ ...current, categoryId: e.target.value }))}
                 required
+                data-testid="budget-category-select"
               >
                 <option value="">Selecione uma categoria</option>
                 {availableCategories.map((category) => (
@@ -106,6 +107,7 @@ export function Budgets() {
                   value={form.amount}
                   onChange={(e) => setForm((current) => ({ ...current, amount: e.target.value }))}
                   required
+                  data-testid="budget-amount-input"
                 />
               </div>
               <div>
@@ -118,6 +120,7 @@ export function Budgets() {
                   value={form.month}
                   onChange={(e) => setForm((current) => ({ ...current, month: Number(e.target.value) }))}
                   required
+                  data-testid="budget-month-input"
                 />
               </div>
               <div>
@@ -130,13 +133,14 @@ export function Budgets() {
                   value={form.year}
                   onChange={(e) => setForm((current) => ({ ...current, year: Number(e.target.value) }))}
                   required
+                  data-testid="budget-year-input"
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
               <button type="button" className="btn-ghost" style={{ flex: 1 }} onClick={() => setShowForm(false)}>Cancelar</button>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading || availableCategories.length === 0}>
+              <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={createMutation.isLoading || availableCategories.length === 0} data-testid="save-budget-button">
                 {createMutation.isLoading ? 'Criando...' : 'Criar Orcamento'}
               </button>
             </div>
@@ -195,7 +199,7 @@ function BudgetCard({ budget, onDelete }: { budget: Budget; onDelete: () => void
   const progress = Math.min(100, budget.percentage)
 
   return (
-    <div className="card" style={{ padding: 18 }}>
+    <div className="card" style={{ padding: 18 }} data-testid="budget-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 38, height: 38, borderRadius: 8, background: `${budget.category.color}22`, border: `1px solid ${budget.category.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: budget.category.color }}>
