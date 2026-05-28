@@ -54,6 +54,9 @@ const jwtSecret = getRequiredProductionValue(
 ) || 'sua_chave_secreta_super_segura_aqui'
 
 const databaseUrl = process.env.DATABASE_URL
+const appVersion = process.env.APP_VERSION || '1.0.0'
+const gitSha = process.env.GIT_SHA || ''
+const buildTime = process.env.BUILD_TIME || ''
 
 export const env = {
   port: getNumber(process.env.PORT, 3333),
@@ -92,5 +95,11 @@ export const env = {
 
   logging: {
     level: process.env.LOG_LEVEL || (nodeEnv === 'test' ? 'silent' : isProduction ? 'info' : 'debug'),
+  },
+
+  build: {
+    version: appVersion,
+    commitSha: gitSha || null,
+    buildTime: buildTime || null,
   },
 }

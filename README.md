@@ -159,6 +159,7 @@ Local:      http://localhost:3333/api
 | `PUT` | `/goals/:id` | Update a goal |
 | `DELETE` | `/goals/:id` | Delete a goal |
 | `GET` | `/health` | API health check |
+| `GET` | `/version` | API build and version metadata |
 
 ## Getting Started
 
@@ -243,6 +244,9 @@ BODY_LIMIT=1mb
 AUTH_RATE_LIMIT_WINDOW_MS=900000
 AUTH_RATE_LIMIT_MAX=20
 LOG_LEVEL=debug
+APP_VERSION=1.0.0
+GIT_SHA=
+BUILD_TIME=
 ```
 
 Web variables:
@@ -252,7 +256,7 @@ VITE_API_URL=http://localhost:3333/api
 VITE_DEMO_EMAIL=demo@financeflow.dev
 ```
 
-The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`. `LOG_LEVEL` controls structured API log verbosity.
+The API accepts both local `DB_*` variables and a managed PostgreSQL `DATABASE_URL`. Set `DB_SSL=true` when your database provider requires SSL. Set `DB_MIGRATIONS_RUN=true` when the API should run pending migrations on startup. Authentication routes are protected by rate limiting through `AUTH_RATE_LIMIT_WINDOW_MS` and `AUTH_RATE_LIMIT_MAX`. `LOG_LEVEL` controls structured API log verbosity. `APP_VERSION`, `GIT_SHA` and `BUILD_TIME` feed the public `/version` endpoint.
 
 ## Scripts
 

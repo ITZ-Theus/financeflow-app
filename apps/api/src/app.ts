@@ -47,6 +47,13 @@ export function createApp() {
   })
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+  app.get('/version', (_req, res) => res.json({
+    name: 'financeflow-api',
+    environment: env.nodeEnv,
+    version: env.build.version,
+    commitSha: env.build.commitSha,
+    buildTime: env.build.buildTime,
+  }))
 
   app.use('/api', (_req, res, next) => {
     res.setHeader('Cache-Control', 'no-store')

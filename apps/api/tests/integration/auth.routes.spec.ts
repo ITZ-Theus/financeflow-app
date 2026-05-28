@@ -134,4 +134,19 @@ describe('Auth Routes - POST /api/auth', () => {
       expect(res.body).toEqual({ status: 'ok' })
     })
   })
+
+  describe('GET /version', () => {
+    it('deve retornar metadados publicos da build', async () => {
+      const res = await request(app).get('/version')
+
+      expect(res.status).toBe(200)
+      expect(res.body).toEqual({
+        name: 'financeflow-api',
+        environment: expect.any(String),
+        version: '1.0.0',
+        commitSha: null,
+        buildTime: null,
+      })
+    })
+  })
 })

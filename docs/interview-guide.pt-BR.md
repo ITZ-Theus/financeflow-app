@@ -76,6 +76,7 @@ Frase boa:
 - Relatorios financeiros com filtros por periodo, tipo e categoria.
 - Cards de insight para taxa de economia, direcao dos gastos e maior categoria de despesa.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
+- Endpoint publico de versao/build para conferir ambiente e commit em producao.
 - Conta demo para recrutador testar rapidamente.
 
 ## Perguntas Que Podem Aparecer

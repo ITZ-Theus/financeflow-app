@@ -329,6 +329,7 @@ Docs:
 - Projeto subiu em producao com Vercel + Render + Neon.
 - CI esta configurado no GitHub Actions.
 - API usa migrations, JWT, bcrypt, Helmet, rate limit, CORS configurado, request id e logs estruturados.
+- API expoe `/version` com versao, ambiente, commit e horario de build quando configurados.
 - Frontend tem toast notifications.
 - Categoria tem criar, editar e excluir.
 - Excluir categoria em uso foi tratado.
@@ -358,8 +359,7 @@ Sugestoes de roadmap para deixar com ainda mais cara de projeto senior:
 1. Melhorar metas com historico de contribuicoes.
 2. Adicionar testes E2E para metas e relatorios.
 3. Adicionar Sentry ou ferramenta similar de error tracking.
-4. Melhorar observabilidade com endpoint de versao/build.
-5. Criar portfolio pessoal e linkar o FinanceFlow como case principal.
+4. Criar portfolio pessoal e linkar o FinanceFlow como case principal.
 
 ## Como Explicar Em Entrevista
 
