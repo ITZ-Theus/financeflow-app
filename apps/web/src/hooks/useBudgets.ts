@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from 'react-query'
 import { api } from '../services/api'
 import { toast } from '../store/toastStore'
 import { getApiErrorMessage } from '../utils/apiError'
-import type { Budget } from '../types'
+import type { Budget, BudgetAlert } from '../types'
 
 export interface BudgetFilters {
   month?: number
@@ -23,6 +23,13 @@ export function useBudgets(params?: BudgetFilters) {
   })
 }
 
+export function useBudgetAlerts(params?: BudgetFilters) {
+  return useQuery<BudgetAlert[]>(['budget-alerts', params], async () => {
+    const { data } = await api.get('/budgets/alerts', { params })
+    return data
+  })
+}
+
 export function useCreateBudget() {
   const qc = useQueryClient()
   return useMutation(
@@ -33,6 +40,7 @@ export function useCreateBudget() {
     {
       onSuccess: () => {
         qc.invalidateQueries('budgets')
+        qc.invalidateQueries('budget-alerts')
         toast.success('Orcamento criado', 'O limite mensal ja esta sendo acompanhado.')
       },
       onError: (error) => {
@@ -49,6 +57,7 @@ export function useDeleteBudget() {
     {
       onSuccess: () => {
         qc.invalidateQueries('budgets')
+        qc.invalidateQueries('budget-alerts')
         toast.success('Orcamento removido', 'O acompanhamento desta categoria foi encerrado.')
       },
       onError: (error) => {

@@ -88,6 +88,46 @@ describe('BudgetService', () => {
     })
   })
 
+  describe('alerts', () => {
+    it('retorna alertas ordenados por criticidade e uso', async () => {
+      const food = makeCategory({ id: 'cat-food', name: 'Mercado', color: '#f59e0b' })
+      const leisure = makeCategory({ id: 'cat-leisure', name: 'Lazer', color: '#22c55e' })
+      const health = makeCategory({ id: 'cat-health', name: 'Saude', color: '#ec4899' })
+
+      budgetRepo.find.mockResolvedValue([
+        makeBudget({ id: 'budget-food', amount: 1000, categoryId: food.id, category: food }),
+        makeBudget({ id: 'budget-leisure', amount: 500, categoryId: leisure.id, category: leisure }),
+        makeBudget({ id: 'budget-health', amount: 600, categoryId: health.id, category: health }),
+      ])
+      transactionRepo.findBy
+        .mockResolvedValueOnce([
+          makeTransaction({ type: 'expense', amount: 850, categoryId: food.id, date: '2026-01-10' }),
+        ])
+        .mockResolvedValueOnce([
+          makeTransaction({ type: 'expense', amount: 650, categoryId: leisure.id, date: '2026-01-12' }),
+        ])
+        .mockResolvedValueOnce([
+          makeTransaction({ type: 'expense', amount: 120, categoryId: health.id, date: '2026-01-12' }),
+        ])
+
+      const result = await service.alerts(USER_ID, { month: 1, year: 2026 })
+
+      expect(result).toHaveLength(2)
+      expect(result[0]).toMatchObject({
+        budgetId: 'budget-leisure',
+        categoryName: 'Lazer',
+        severity: 'critical',
+        percentage: 130,
+      })
+      expect(result[1]).toMatchObject({
+        budgetId: 'budget-food',
+        categoryName: 'Mercado',
+        severity: 'warning',
+        percentage: 85,
+      })
+    })
+  })
+
   describe('create', () => {
     it('cria orcamento para categoria de saida do usuario', async () => {
       const category = makeCategory({ type: 'expense' })

@@ -334,6 +334,8 @@ Docs:
 - Excluir categoria em uso foi tratado.
 - Transacoes tem paginacao, export CSV e recorrencia mensal.
 - Dashboard tem resumo mensal, tendencia de 6 meses, insights, gastos por categoria e saude de orcamentos.
+- Relatorios tem filtros por periodo, tipo e categoria, tendencia mensal, ranking financeiro e maiores movimentacoes.
+- Orcamentos tem alertas derivados para categorias perto ou acima do limite mensal.
 - Conta demo tem seed idempotente.
 - E2E cobre login demo, categorias, transacoes e orcamentos.
 
@@ -353,13 +355,11 @@ Docs:
 
 Sugestoes de roadmap para deixar com ainda mais cara de projeto senior:
 
-1. Adicionar tela de relatorios com filtros por periodo e categoria.
-2. Melhorar metas com historico de contribuicoes.
-3. Criar alertas de orcamento perto do limite.
-4. Adicionar testes E2E para metas.
-5. Adicionar Sentry ou ferramenta similar de error tracking.
-6. Melhorar observabilidade com endpoint de versao/build.
-7. Criar portfolio pessoal e linkar o FinanceFlow como case principal.
+1. Melhorar metas com historico de contribuicoes.
+2. Adicionar testes E2E para metas e relatorios.
+3. Adicionar Sentry ou ferramenta similar de error tracking.
+4. Melhorar observabilidade com endpoint de versao/build.
+5. Criar portfolio pessoal e linkar o FinanceFlow como case principal.
 
 ## Como Explicar Em Entrevista
 

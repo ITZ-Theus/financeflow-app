@@ -27,6 +27,23 @@ export interface BudgetProgress {
   updatedAt?: Date
 }
 
+export interface BudgetAlert {
+  id: string
+  budgetId: string
+  categoryId: string
+  categoryName: string
+  categoryColor: string
+  severity: 'warning' | 'critical'
+  title: string
+  message: string
+  spent: number
+  limit: number
+  remaining: number
+  percentage: number
+  month: number
+  year: number
+}
+
 function roundMoney(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100
 }
@@ -69,6 +86,18 @@ export class BudgetService {
     })
 
     return Promise.all(budgets.map((budget) => this.toProgress(budget)))
+  }
+
+  async alerts(userId: string, query: { month?: string | number; year?: string | number } = {}): Promise<BudgetAlert[]> {
+    const budgets = await this.findAll(userId, query)
+
+    return budgets
+      .filter((budget) => budget.status !== 'safe')
+      .map((budget) => this.toAlert(budget))
+      .sort((a, b) => {
+        if (a.severity !== b.severity) return a.severity === 'critical' ? -1 : 1
+        return b.percentage - a.percentage
+      })
   }
 
   async create(userId: string, data: BudgetDTO): Promise<BudgetProgress> {
@@ -174,6 +203,32 @@ export class BudgetService {
       category: budget.category,
       createdAt: budget.createdAt,
       updatedAt: budget.updatedAt,
+    }
+  }
+
+  private toAlert(budget: BudgetProgress): BudgetAlert {
+    const isCritical = budget.status === 'exceeded'
+    const limit = Number(budget.amount)
+
+    return {
+      id: `${budget.id}-${budget.month}-${budget.year}`,
+      budgetId: budget.id,
+      categoryId: budget.categoryId,
+      categoryName: budget.category.name,
+      categoryColor: budget.category.color,
+      severity: isCritical ? 'critical' : 'warning',
+      title: isCritical
+        ? `${budget.category.name} passou do limite`
+        : `${budget.category.name} esta perto do limite`,
+      message: isCritical
+        ? `Voce ultrapassou o orcamento em R$ ${Math.abs(budget.remaining).toFixed(2)}.`
+        : `Restam R$ ${budget.remaining.toFixed(2)} antes de atingir o limite.`,
+      spent: budget.spent,
+      limit,
+      remaining: budget.remaining,
+      percentage: budget.percentage,
+      month: budget.month,
+      year: budget.year,
     }
   }
 }

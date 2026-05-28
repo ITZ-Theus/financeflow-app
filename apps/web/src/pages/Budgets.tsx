@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Plus, Trash2, WalletCards } from 'lucide-react'
+import { AlertTriangle, BellRing, CheckCircle2, Plus, Trash2, WalletCards } from 'lucide-react'
 import { Modal } from '../components/ui/Modal'
 import { CategoryIcon } from '../components/ui/CategoryIcon'
 import { useCategories } from '../hooks/useCategories'
-import { useBudgets, useCreateBudget, useDeleteBudget } from '../hooks/useBudgets'
+import { useBudgetAlerts, useBudgets, useCreateBudget, useDeleteBudget } from '../hooks/useBudgets'
 import { formatCurrency, formatMonth } from '../utils/formatters'
-import type { Budget, BudgetStatus } from '../types'
+import type { Budget, BudgetAlert, BudgetStatus } from '../types'
 
 const statusLabel: Record<BudgetStatus, string> = {
   safe: 'Dentro do limite',
@@ -31,6 +31,7 @@ export function Budgets() {
 
   const { data: categories } = useCategories()
   const { data: budgets, isLoading } = useBudgets({ month: form.month, year: form.year })
+  const { data: alerts, isLoading: isLoadingAlerts } = useBudgetAlerts({ month: form.month, year: form.year })
   const createMutation = useCreateBudget()
   const deleteMutation = useDeleteBudget()
   const expenseCategories = categories?.filter((category) => category.type === 'expense') ?? []
@@ -75,6 +76,36 @@ export function Budgets() {
         <BudgetSummaryCard label="Limite planejado" value={formatCurrency(totalBudgeted)} />
         <BudgetSummaryCard label="Gasto acompanhado" value={formatCurrency(totalSpent)} tone={usage >= 100 ? 'red' : 'cyan'} />
         <BudgetSummaryCard label="Uso geral" value={`${usage}%`} tone={usage >= 100 ? 'red' : usage >= 80 ? 'amber' : 'green'} />
+      </section>
+
+      <section className="premium-panel budget-alert-center">
+        <div className="panel-heading">
+          <div>
+            <span>Alertas</span>
+            <h3>Orcamentos em atencao</h3>
+          </div>
+          <BellRing size={18} />
+        </div>
+
+        {isLoadingAlerts && <div className="empty-row">Carregando alertas...</div>}
+
+        {!isLoadingAlerts && !alerts?.length && (
+          <div className="budget-alert-empty">
+            <CheckCircle2 size={18} />
+            <div>
+              <p>Nenhum alerta para {formatMonth(form.month, form.year)}</p>
+              <span>As categorias acompanhadas estao dentro dos limites definidos.</span>
+            </div>
+          </div>
+        )}
+
+        {!!alerts?.length && (
+          <div className="budget-alert-grid">
+            {alerts.map((alert) => (
+              <BudgetAlertCard key={alert.id} alert={alert} />
+            ))}
+          </div>
+        )}
       </section>
 
       {showForm && (
@@ -172,6 +203,41 @@ export function Budgets() {
           ))}
         </div>
       </section>
+    </div>
+  )
+}
+
+function BudgetAlertCard({ alert }: { alert: BudgetAlert }) {
+  const isCritical = alert.severity === 'critical'
+  const color = isCritical ? 'var(--red)' : 'var(--amber)'
+  const progress = Math.min(100, alert.percentage)
+
+  return (
+    <div className="budget-alert-card" data-severity={alert.severity}>
+      <div className="budget-alert-card__top">
+        <div className="budget-alert-card__icon" style={{ color }}>
+          <AlertTriangle size={18} />
+        </div>
+        <div>
+          <strong>{alert.title}</strong>
+          <span>{alert.message}</span>
+        </div>
+      </div>
+
+      <div className="budget-alert-card__meter">
+        <div>
+          <span>Uso</span>
+          <strong style={{ color }}>{alert.percentage.toFixed(0)}%</strong>
+        </div>
+        <div>
+          <span style={{ width: `${progress}%`, background: color }} />
+        </div>
+      </div>
+
+      <div className="budget-alert-card__footer">
+        <span>{formatCurrency(alert.spent)} de {formatCurrency(alert.limit)}</span>
+        <span>{isCritical ? 'Rever gastos' : 'Monitorar'}</span>
+      </div>
     </div>
   )
 }

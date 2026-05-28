@@ -23,6 +23,11 @@ class BudgetController {
     return res.json(await this.service.findAll(req.userId!, query))
   }
 
+  async alerts(req: AuthRequest, res: Response) {
+    const query = budgetQuerySchema.parse(req.query)
+    return res.json(await this.service.alerts(req.userId!, query))
+  }
+
   async store(req: AuthRequest, res: Response) {
     const data = budgetSchema.parse(req.body) as BudgetDTO
     return res.status(201).json(await this.service.create(req.userId!, data))
@@ -44,6 +49,7 @@ const controller = new BudgetController()
 
 router.use(authMiddleware)
 router.get('/', (req, res) => controller.index(req as AuthRequest, res))
+router.get('/alerts', (req, res) => controller.alerts(req as AuthRequest, res))
 router.post('/', (req, res) => controller.store(req as AuthRequest, res))
 router.put('/:id', (req, res) => controller.update(req as AuthRequest, res))
 router.delete('/:id', (req, res) => controller.destroy(req as AuthRequest, res))

@@ -815,6 +815,128 @@ select.input option {
   min-width: 0;
 }
 
+.budget-alert-center {
+  margin-bottom: 18px;
+  padding: 22px;
+}
+
+.budget-alert-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.budget-alert-card,
+.budget-alert-empty {
+  background: rgba(8, 13, 24, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  min-width: 0;
+  padding: 14px;
+}
+
+.budget-alert-card[data-severity='warning'] {
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.budget-alert-card[data-severity='critical'] {
+  border-color: rgba(244, 63, 94, 0.32);
+}
+
+.budget-alert-card__top,
+.budget-alert-empty {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+}
+
+.budget-alert-card__icon {
+  align-items: center;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  display: flex;
+  flex-shrink: 0;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.budget-alert-card strong,
+.budget-alert-empty p {
+  color: var(--text-primary);
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.budget-alert-card span,
+.budget-alert-empty span {
+  color: var(--text-muted);
+  display: block;
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 5px;
+}
+
+.budget-alert-empty > svg {
+  color: var(--green);
+  flex-shrink: 0;
+}
+
+.budget-alert-card__meter {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.budget-alert-card__meter > div:first-child,
+.budget-alert-card__footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.budget-alert-card__meter > div:first-child span,
+.budget-alert-card__footer span {
+  margin-top: 0;
+}
+
+.budget-alert-card__meter > div:first-child strong {
+  font-size: 13px;
+}
+
+.budget-alert-card__meter > div:last-child {
+  background: rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.budget-alert-card__meter > div:last-child span {
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  margin-top: 0;
+  min-width: 8px;
+}
+
+.budget-alert-card__footer {
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  margin-top: 13px;
+  padding-top: 11px;
+}
+
+.budget-alert-card__footer span:last-child {
+  color: var(--text-secondary);
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .budget-alert-row {
   align-items: center;
   background: rgba(8, 13, 24, 0.42);

@@ -70,8 +70,10 @@ Frase boa:
 - Testes de frontend com Vitest e Testing Library.
 - Teste E2E com Playwright cobrindo login demo, categoria, ciclo de transacao e orcamentos.
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
+- Alertas de orcamento para categorias perto ou acima do limite mensal.
 - Transacoes recorrentes mensais com geracao automatica e validacao de data final.
 - Tendencia mensal de entradas, saidas e saldo calculada pela API e exibida na dashboard.
+- Relatorios financeiros com filtros por periodo, tipo e categoria.
 - Cards de insight para taxa de economia, direcao dos gastos e maior categoria de despesa.
 - Rate limit no auth, Helmet, CORS configurado, request id e logs estruturados.
 - Conta demo para recrutador testar rapidamente.

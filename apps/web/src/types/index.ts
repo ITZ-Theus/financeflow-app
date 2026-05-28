@@ -63,6 +63,23 @@ export interface Budget {
   updatedAt?: string
 }
 
+export interface BudgetAlert {
+  id: string
+  budgetId: string
+  categoryId: string
+  categoryName: string
+  categoryColor: string
+  severity: 'warning' | 'critical'
+  title: string
+  message: string
+  spent: number
+  limit: number
+  remaining: number
+  percentage: number
+  month: number
+  year: number
+}
+
 export interface Summary {
   income: number
   expense: number

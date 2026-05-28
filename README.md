@@ -18,8 +18,10 @@ The project was built as a portfolio-grade application, with a typed React front
 - CSV export for transaction history
 - Category management for financial organization
 - Monthly category budgets with spending progress
+- Budget alerts for categories near or above the monthly limit
 - Financial goals with progress tracking
 - Monthly dashboard with summary cards, insight cards, charts and six-month trend analysis
+- Financial reports with custom period and category analysis
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
@@ -96,6 +98,7 @@ financeflow/
 - Create monthly budgets for expense categories
 - Track spent amount, remaining amount and percentage used
 - Surface safe, warning and exceeded budget states
+- Alert center for warning and exceeded categories
 - Recalculate progress when transactions or categories change
 
 ### Goals
@@ -114,6 +117,13 @@ financeflow/
 - Budget health panel with warning and exceeded categories
 - Recent transactions list
 - Premium dark interface with glass panels and hover effects
+
+### Reports
+
+- Custom period, type and category filters
+- Period totals for income, expenses, balance, volume and savings rate
+- Monthly trend chart for the selected interval
+- Category ranking and top transactions by amount
 
 ## API Overview
 
@@ -140,6 +150,7 @@ Local:      http://localhost:3333/api
 | `PUT` | `/categories/:id` | Update a category |
 | `DELETE` | `/categories/:id` | Delete a category |
 | `GET` | `/budgets` | List monthly category budgets |
+| `GET` | `/budgets/alerts` | List warning and exceeded budget alerts |
 | `POST` | `/budgets` | Create a category budget |
 | `PUT` | `/budgets/:id` | Update a category budget |
 | `DELETE` | `/budgets/:id` | Delete a category budget |
