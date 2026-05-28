@@ -83,6 +83,46 @@ export interface MonthlyTrendItem {
   balance: number
 }
 
+export interface ReportMonthlyItem extends MonthlyTrendItem {}
+
+export interface ReportCategoryItem {
+  categoryId: string | null
+  name: string
+  color: string
+  type: TransactionType
+  total: number
+  count: number
+  percentage: number
+}
+
+export interface ReportTransactionItem {
+  id: string
+  title: string
+  amount: number
+  type: TransactionType
+  date: string
+  categoryName: string
+  categoryColor: string
+}
+
+export interface FinancialReport {
+  period: {
+    startDate: string
+    endDate: string
+  }
+  totals: {
+    income: number
+    expense: number
+    balance: number
+    transactionCount: number
+    averageTransaction: number
+    savingsRate: number
+  }
+  monthly: ReportMonthlyItem[]
+  categories: ReportCategoryItem[]
+  topTransactions: ReportTransactionItem[]
+}
+
 export interface PaginatedResult<T> {
   data: T[]
   total: number

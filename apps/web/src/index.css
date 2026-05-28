@@ -918,6 +918,10 @@ select.input option {
   grid-template-columns: 1.1fr 0.75fr 0.9fr 1.2fr auto;
 }
 
+.report-filter-grid {
+  grid-template-columns: 0.9fr 0.9fr 0.9fr 1.2fr auto;
+}
+
 .filter-reset {
   min-height: 42px;
   padding-inline: 18px;
@@ -1101,6 +1105,130 @@ select.input option {
   text-align: center;
 }
 
+.report-detail-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr);
+}
+
+.report-panel {
+  min-height: 380px;
+  padding: 22px;
+}
+
+.report-rank-list,
+.report-transaction-list {
+  display: grid;
+  gap: 12px;
+}
+
+.report-rank-row {
+  background: rgba(8, 13, 24, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.report-rank-row__top {
+  align-items: flex-start;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.report-rank-row__top > div {
+  min-width: 0;
+}
+
+.report-rank-row__top > div:first-child {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-rank-row strong,
+.report-transaction-row strong {
+  color: var(--text-primary);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+}
+
+.report-rank-row small {
+  color: var(--text-muted);
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 4px;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.report-rank-row__top > div:first-child small {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  margin-top: 0;
+  padding: 4px 7px;
+}
+
+.report-dot {
+  border-radius: 50%;
+  box-shadow: 0 0 14px currentColor;
+  flex-shrink: 0;
+  height: 9px;
+  width: 9px;
+}
+
+.report-meter {
+  background: rgba(148, 163, 184, 0.13);
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.report-meter span {
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  min-width: 7px;
+}
+
+.report-transaction-row {
+  align-items: center;
+  background: rgba(8, 13, 24, 0.42);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 14px;
+}
+
+.report-transaction-row p {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.report-transaction-row span {
+  color: var(--text-muted);
+  display: block;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.report-transaction-row strong[data-type='income'] {
+  color: #34d399;
+}
+
+.report-transaction-row strong[data-type='expense'] {
+  color: #fb7185;
+}
+
 @keyframes pulseDot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.55; transform: scale(0.72); }
@@ -1114,6 +1242,10 @@ select.input option {
   }
 
   .budget-health-content {
+    grid-template-columns: 1fr;
+  }
+
+  .report-detail-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1180,5 +1312,17 @@ select.input option {
   .transaction-row__side {
     justify-content: space-between;
     width: 100%;
+  }
+
+  .report-transaction-row,
+  .report-rank-row__top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .report-transaction-row strong,
+  .report-rank-row__top > div:last-child,
+  .report-rank-row small {
+    text-align: left;
   }
 }

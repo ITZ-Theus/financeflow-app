@@ -14,6 +14,7 @@ const Transactions = lazy(() => import('./pages/Transactions').then((module) => 
 const Categories = lazy(() => import('./pages/Categories').then((module) => ({ default: module.Categories })))
 const Budgets = lazy(() => import('./pages/Budgets').then((module) => ({ default: module.Budgets })))
 const Goals = lazy(() => import('./pages/Goals').then((module) => ({ default: module.Goals })))
+const Reports = lazy(() => import('./pages/Reports').then((module) => ({ default: module.Reports })))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <Route path="categories"   element={<Categories />} />
               <Route path="budgets"      element={<Budgets />} />
               <Route path="goals"        element={<Goals />} />
+              <Route path="reports"      element={<Reports />} />
             </Route>
           </Routes>
         </Suspense>

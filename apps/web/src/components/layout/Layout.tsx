@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, ArrowLeftRight, Tag, Target, ChevronLeft, ChevronRight, LogOut, WalletCards } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Tag, Target, ChevronLeft, ChevronRight, LogOut, WalletCards, BarChart3 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { BrandMark } from '../ui/BrandMark'
 
@@ -20,6 +20,7 @@ export function Layout() {
     { to: '/categories',   icon: <Tag             size={18} />, label: 'Categorias' },
     { to: '/budgets',      icon: <WalletCards     size={18} />, label: 'Orcamentos' },
     { to: '/goals',        icon: <Target          size={18} />, label: 'Metas'      },
+    { to: '/reports',      icon: <BarChart3       size={18} />, label: 'Relatorios' },
   ]
 
   return (
