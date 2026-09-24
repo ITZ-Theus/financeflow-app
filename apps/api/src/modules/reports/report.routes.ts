@@ -2,12 +2,11 @@ import { Response, Router } from 'express'
 import { z } from 'zod'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
 import { FinancialReportQuery, ReportService } from './report.service'
-
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use o formato YYYY-MM-DD')
+import { isoDateSchema } from '../../shared/validation/date'
 
 const reportQuerySchema = z.object({
-  startDate: dateSchema.optional(),
-  endDate: dateSchema.optional(),
+  startDate: isoDateSchema.optional(),
+  endDate: isoDateSchema.optional(),
   type: z.enum(['income', 'expense']).optional(),
   categoryId: z.string().uuid().optional(),
 })

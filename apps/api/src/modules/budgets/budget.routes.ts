@@ -1,10 +1,12 @@
 import { Response, Router } from 'express'
 import { z } from 'zod'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
+import { validateIdParam } from '../../shared/validation/id'
+import { MAX_MONEY_AMOUNT } from '../../shared/validation/money'
 import { BudgetDTO, BudgetService } from './budget.service'
 
 const budgetSchema = z.object({
-  amount: z.coerce.number().positive(),
+  amount: z.coerce.number().positive().max(MAX_MONEY_AMOUNT),
   month: z.coerce.number().int().min(1).max(12),
   year: z.coerce.number().int().min(2000).max(2100),
   categoryId: z.string().uuid(),
@@ -48,6 +50,7 @@ const router = Router()
 const controller = new BudgetController()
 
 router.use(authMiddleware)
+router.param('id', validateIdParam)
 router.get('/', (req, res) => controller.index(req as AuthRequest, res))
 router.get('/alerts', (req, res) => controller.alerts(req as AuthRequest, res))
 router.post('/', (req, res) => controller.store(req as AuthRequest, res))

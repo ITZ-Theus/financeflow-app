@@ -10,8 +10,13 @@ export interface PaginatedResult<T> {
   totalPages: number
 }
 
-export function getPaginationParams(query: any): PaginationParams {
-  const page  = Math.max(1, parseInt(query.page)  || 1)
-  const limit = Math.min(100, parseInt(query.limit) || 10)
+export interface PaginationQuery {
+  page?: string | number
+  limit?: string | number
+}
+
+export function getPaginationParams(query: PaginationQuery): PaginationParams {
+  const page  = Math.max(1, parseInt(String(query.page))  || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(String(query.limit)) || 10))
   return { page, limit }
 }
