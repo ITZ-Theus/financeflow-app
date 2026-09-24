@@ -4,6 +4,7 @@ import { AppDataSource } from '../../config/database'
 import { Goal } from './goal.entity'
 import { AppError } from '../../shared/errors/AppError'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
+import { isoDateSchema } from '../../shared/validation/date'
 
 class GoalService {
   private repo = AppDataSource.getRepository(Goal)
@@ -35,7 +36,7 @@ class GoalService {
 const createSchema = z.object({
   title: z.string().min(1),
   targetAmount: z.number().positive(),
-  deadline: z.string(),
+  deadline: isoDateSchema,
 })
 
 type CreateGoalInput = {
@@ -48,7 +49,7 @@ const updateSchema = z.object({
   title: z.string().min(1).optional(),
   targetAmount: z.number().positive().optional(),
   currentAmount: z.number().min(0).optional(),
-  deadline: z.string().optional(),
+  deadline: isoDateSchema.optional(),
   status: z.enum(['active', 'completed', 'cancelled']).optional(),
 })
 

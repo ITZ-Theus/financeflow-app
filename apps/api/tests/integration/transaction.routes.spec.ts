@@ -167,6 +167,73 @@ describe('Transaction Routes - /api/transactions', () => {
         })
       )
     })
+
+    const validRecurring = {
+      title: 'Aluguel',
+      amount: 2200,
+      type: 'expense',
+      date: '2026-05-01',
+      isRecurring: true,
+      recurrenceEndDate: '2026-12-31',
+    }
+
+    it('deve retornar 422 para recurrenceEndDate invalida sem chamar o service', async () => {
+      const res = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({ ...validRecurring, recurrenceEndDate: 'abc' })
+
+      expect(res.status).toBe(422)
+      expect(res.body.errors).toEqual([
+        { field: 'recurrenceEndDate', message: 'Use uma data valida no formato YYYY-MM-DD' },
+      ])
+      expect(MockedService.prototype.create).not.toHaveBeenCalled()
+    })
+
+    it.each(['abc', '2026-02-30', '2026-13-01', '2026-1-1'])('deve retornar 422 para date %p', async (date) => {
+      const res = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({ ...validRecurring, date })
+
+      expect(res.status).toBe(422)
+      expect(res.body.errors[0].field).toBe('date')
+      expect(MockedService.prototype.create).not.toHaveBeenCalled()
+    })
+
+    it('deve retornar 422 para amount acima do limite de numeric(10,2)', async () => {
+      const res = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({ title: 'Grande', amount: 100_000_000, type: 'income', date: '2026-05-01' })
+
+      expect(res.status).toBe(422)
+      expect(res.body.errors[0].field).toBe('amount')
+      expect(MockedService.prototype.create).not.toHaveBeenCalled()
+    })
+
+    it('deve aceitar amount no limite de numeric(10,2)', async () => {
+      MockedService.prototype.create.mockResolvedValue(makeTransaction())
+
+      const res = await request(app)
+        .post('/api/transactions')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({ title: 'Limite', amount: 99_999_999.99, type: 'income', date: '2026-05-01' })
+
+      expect(res.status).toBe(201)
+    })
+  })
+
+  describe('PUT /api/transactions/:id', () => {
+    it('deve retornar 422 para recurrenceEndDate invalida sem chamar o service', async () => {
+      const res = await request(app)
+        .put('/api/transactions/uuid-1')
+        .set('Authorization', `Bearer ${makeToken()}`)
+        .send({ recurrenceEndDate: 'abc' })
+
+      expect(res.status).toBe(422)
+      expect(MockedService.prototype.update).not.toHaveBeenCalled()
+    })
   })
 
   describe('DELETE /api/transactions/:id', () => {
