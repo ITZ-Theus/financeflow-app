@@ -2,6 +2,7 @@ import { AppDataSource } from '../../config/database'
 import { Transaction } from './transaction.entity'
 import { AppError } from '../../shared/errors/AppError'
 import { getPaginationParams, PaginatedResult } from '../../shared/utils/pagination'
+import { isIsoDate } from '../../shared/validation/date'
 
 interface CreateTransactionDTO {
   title: string
@@ -96,16 +97,25 @@ function addMonthsClamped(date: string, monthsToAdd: number): string {
   return formatDateOnly(new Date(Date.UTC(targetYear, normalizedMonth, day)))
 }
 
-function countMonthlyOccurrences(startDate: string, endDate: string): number {
-  let count = 0
-  let nextDate = addMonthsClamped(startDate, 1)
+const MAX_RECURRING_OCCURRENCES = 60
 
-  while (nextDate <= endDate) {
-    count += 1
-    nextDate = addMonthsClamped(startDate, count + 1)
+// Number of monthly occurrences after startDate (the start itself excluded) that fall on or before endDate.
+// Occurrence N is startDate + N months, clamped to the month's last day (Jan 31 -> Feb 28 -> Mar 31).
+// Computed in constant time so no input can make it loop.
+export function countMonthlyOccurrences(startDate: string, endDate: string): number {
+  if (!isIsoDate(startDate) || !isIsoDate(endDate)) {
+    throw new RangeError('countMonthlyOccurrences expects YYYY-MM-DD dates')
   }
 
-  return count
+  if (endDate <= startDate) return 0
+
+  const start = parseDateOnly(startDate)
+  const end = parseDateOnly(endDate)
+  const monthsBetween = (end.getUTCFullYear() - start.getUTCFullYear()) * 12
+    + (end.getUTCMonth() - start.getUTCMonth())
+
+  // The occurrence in endDate's month only counts if its clamped day is not after endDate.
+  return addMonthsClamped(startDate, monthsBetween) <= endDate ? monthsBetween : monthsBetween - 1
 }
 
 export class TransactionService {
@@ -232,12 +242,17 @@ export class TransactionService {
       throw new AppError('Data final da recorrencia e obrigatoria', 400)
     }
 
+    // String comparison below is only meaningful for valid YYYY-MM-DD values.
+    if (!isIsoDate(data.date) || !isIsoDate(data.recurrenceEndDate)) {
+      throw new AppError('Datas da recorrencia devem estar no formato YYYY-MM-DD', 400)
+    }
+
     if (data.recurrenceEndDate < data.date) {
       throw new AppError('Data final da recorrencia deve ser posterior a data inicial', 400)
     }
 
     const occurrences = countMonthlyOccurrences(data.date, data.recurrenceEndDate)
-    if (occurrences > 60) {
+    if (occurrences > MAX_RECURRING_OCCURRENCES) {
       throw new AppError('Recorrencia limitada a 60 meses', 400)
     }
 

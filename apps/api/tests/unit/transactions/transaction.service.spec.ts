@@ -1,4 +1,4 @@
-import { TransactionService } from '../../../src/modules/transactions/transaction.service'
+import { countMonthlyOccurrences, TransactionService } from '../../../src/modules/transactions/transaction.service'
 import { AppError } from '../../../src/shared/errors/AppError'
 import { makeTransaction, makeRepository } from '../../helpers/factories'
 
@@ -124,6 +124,91 @@ describe('TransactionService', () => {
       })).rejects.toMatchObject({
         statusCode: 400,
       })
+    })
+
+    const recurring = {
+      title: 'Assinatura',
+      amount: 50,
+      type: 'expense' as const,
+      date: '2026-01-15',
+      isRecurring: true,
+    }
+
+    it('deve rejeitar data final invalida sem entrar na geracao de recorrencias', async () => {
+      const startedAt = Date.now()
+
+      await expect(service.create(USER_ID, { ...recurring, recurrenceEndDate: 'abc' }))
+        .rejects.toMatchObject({ statusCode: 400 })
+
+      // Before the fix this input spun for ~9s; the generous budget only guards against that regression.
+      expect(Date.now() - startedAt).toBeLessThan(1000)
+      expect(repo.save).not.toHaveBeenCalled()
+    })
+
+    it('deve rejeitar data inicial invalida em transacao recorrente', async () => {
+      await expect(service.create(USER_ID, { ...recurring, date: '2026-02-30', recurrenceEndDate: '2026-06-30' }))
+        .rejects.toMatchObject({ statusCode: 400 })
+
+      expect(repo.save).not.toHaveBeenCalled()
+    })
+
+    it('deve criar apenas a transacao original quando data final for igual a inicial', async () => {
+      repo.create.mockImplementation((data) => makeTransaction(data as any))
+      repo.save.mockImplementation(async (data) => data)
+
+      await service.create(USER_ID, { ...recurring, recurrenceEndDate: '2026-01-15' })
+
+      expect(repo.save).toHaveBeenCalledTimes(1)
+    })
+
+    it('deve aceitar recorrencia de exatamente 60 meses', async () => {
+      repo.create.mockImplementation((data) => makeTransaction(data as any))
+      repo.save.mockImplementation(async (data) => data)
+
+      await service.create(USER_ID, { ...recurring, recurrenceEndDate: '2031-01-15' })
+
+      const generated = repo.save.mock.calls[1][0]
+      expect(generated).toHaveLength(60)
+      expect(generated[59].date).toBe('2031-01-15')
+    })
+
+    it('deve rejeitar recorrencia acima de 60 meses', async () => {
+      await expect(service.create(USER_ID, { ...recurring, recurrenceEndDate: '2031-02-15' }))
+        .rejects.toMatchObject({ statusCode: 400, message: 'Recorrencia limitada a 60 meses' })
+
+      expect(repo.save).not.toHaveBeenCalled()
+    })
+  })
+
+  // ─── RECURRENCE COUNT ──────────────────────────────────────
+  describe('countMonthlyOccurrences', () => {
+    it.each([
+      ['2026-01-15', '2026-01-15', 0],
+      ['2026-01-15', '2026-02-14', 0],
+      ['2026-01-15', '2026-02-15', 1],
+      ['2026-01-31', '2026-02-27', 0],
+      ['2026-01-31', '2026-02-28', 1],
+      ['2026-01-31', '2026-03-30', 1],
+      ['2026-01-31', '2026-03-31', 2],
+      ['2028-01-31', '2028-02-29', 1],
+      ['2026-11-30', '2027-02-28', 3],
+      ['2026-01-15', '2031-01-15', 60],
+      ['2026-01-15', '2031-02-15', 61],
+      ['2026-03-10', '2026-01-10', 0],
+    ])('%s -> %s = %i', (start, end, expected) => {
+      expect(countMonthlyOccurrences(start, end)).toBe(expected)
+    })
+
+    it('calcula distancias muito longas em tempo constante', () => {
+      expect(countMonthlyOccurrences('2026-01-01', '9999-12-31')).toBe((9999 - 2026) * 12 + 11)
+    })
+
+    it.each([
+      ['2026-01-15', 'abc'],
+      ['abc', '2026-01-15'],
+      ['2026-01-15', '2026-02-30'],
+    ])('lanca erro para datas invalidas (%s, %s)', (start, end) => {
+      expect(() => countMonthlyOccurrences(start, end)).toThrow(RangeError)
     })
   })
 

@@ -2,17 +2,21 @@ import { Response, Router } from 'express'
 import { z } from 'zod'
 import { TransactionService } from './transaction.service'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
+import { isoDateSchema } from '../../shared/validation/date'
+
+// Largest value that fits the numeric(10,2) column.
+const MAX_AMOUNT = 99_999_999.99
 
 const createSchema = z.object({
   title: z.string().min(1),
-  amount: z.number().positive(),
+  amount: z.number().positive().max(MAX_AMOUNT),
   type: z.enum(['income', 'expense']),
-  date: z.string(),
+  date: isoDateSchema,
   description: z.string().optional(),
   categoryId: z.string().uuid().nullable().optional(),
   isRecurring: z.boolean().optional(),
   recurrenceInterval: z.literal('monthly').nullable().optional(),
-  recurrenceEndDate: z.string().nullable().optional(),
+  recurrenceEndDate: isoDateSchema.nullable().optional(),
 })
 
 type CreateTransactionInput = {
