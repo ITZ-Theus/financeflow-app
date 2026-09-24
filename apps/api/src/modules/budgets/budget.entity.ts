@@ -5,6 +5,7 @@ import {
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { Category } from '../categories/category.entity'
+import { moneyTransformer } from '../../shared/database/moneyTransformer'
 
 @Entity('budgets')
 @Index('IDX_budgets_user_category_month_year', ['userId', 'categoryId', 'month', 'year'], { unique: true })
@@ -12,7 +13,7 @@ export class Budget {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, transformer: moneyTransformer })
   amount!: number
 
   @Column()

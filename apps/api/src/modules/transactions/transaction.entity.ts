@@ -4,6 +4,7 @@ import {
 } from 'typeorm'
 import { User } from '../users/user.entity'
 import { Category } from '../categories/category.entity'
+import { moneyTransformer } from '../../shared/database/moneyTransformer'
 
 @Entity('transactions')
 export class Transaction {
@@ -13,7 +14,7 @@ export class Transaction {
   @Column()
   title!: string
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, transformer: moneyTransformer })
   amount!: number
 
   @Column({ type: 'enum', enum: ['income', 'expense'] })

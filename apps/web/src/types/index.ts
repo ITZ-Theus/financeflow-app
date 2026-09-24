@@ -20,7 +20,7 @@ export interface Category {
 export interface Transaction {
   id: string
   title: string
-  amount: number | string
+  amount: number
   type: TransactionType
   date: string
   description?: string | null
@@ -37,8 +37,8 @@ export interface Transaction {
 export interface Goal {
   id: string
   title: string
-  targetAmount: number | string
-  currentAmount: number | string
+  targetAmount: number
+  currentAmount: number
   deadline: string
   status: GoalStatus
   userId: string
@@ -49,7 +49,7 @@ export type BudgetStatus = 'safe' | 'warning' | 'exceeded'
 
 export interface Budget {
   id: string
-  amount: number | string
+  amount: number
   spent: number
   remaining: number
   percentage: number
