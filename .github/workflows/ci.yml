@@ -43,3 +43,45 @@ jobs:
 
       - name: Run Web tests
         run: npm run test:web
+
+  api-database-tests:
+    name: API Database Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: financeflow
+          POSTGRES_PASSWORD: financeflow123
+          POSTGRES_DB: financeflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U financeflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run API tests against PostgreSQL
+        run: npm run test:db
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: financeflow
+          DB_PASS: financeflow123
+          JWT_SECRET: test_secret_ci
