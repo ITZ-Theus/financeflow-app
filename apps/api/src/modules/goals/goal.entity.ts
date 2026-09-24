@@ -3,6 +3,7 @@ import {
   ManyToOne, JoinColumn, CreateDateColumn
 } from 'typeorm'
 import { User } from '../users/user.entity'
+import { moneyTransformer } from '../../shared/database/moneyTransformer'
 
 @Entity('goals')
 export class Goal {
@@ -12,10 +13,10 @@ export class Goal {
   @Column()
   title!: string
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, transformer: moneyTransformer })
   targetAmount!: number
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0, transformer: moneyTransformer })
   currentAmount!: number
 
   @Column({ type: 'date' })

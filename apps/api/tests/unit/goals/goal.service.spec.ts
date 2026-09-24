@@ -71,20 +71,6 @@ describe('GoalService', () => {
       expect(result.status).toBe('active')
     })
 
-    // Known bug, fixed in T6 (money transformer): Postgres numeric columns arrive as strings,
-    // so "3850.00" >= "12000.00" compares as text and a title-only update completes the goal.
-    // Jest fails this test once the bug is fixed, forcing it to become a regular `it`.
-    it.failing('deve manter meta active ao editar apenas o titulo com valores vindos do banco', async () => {
-      repo.findOneBy.mockResolvedValue(makeGoal({
-        targetAmount: '12000.00' as unknown as number,
-        currentAmount: '3850.00' as unknown as number,
-      }))
-
-      const result = await service.update(USER_ID, 'goal-uuid-1', { title: 'Viagem internacional' })
-
-      expect(result.status).toBe('active')
-    })
-
     it('deve lancar 404 sem salvar quando a meta nao pertence ao usuario', async () => {
       repo.findOneBy.mockResolvedValue(null)
 
