@@ -1,6 +1,7 @@
 import { countMonthlyOccurrences, TransactionService } from '../../../src/modules/transactions/transaction.service'
+import { Category } from '../../../src/modules/categories/category.entity'
 import { AppError } from '../../../src/shared/errors/AppError'
-import { makeTransaction, makeRepository } from '../../helpers/factories'
+import { makeCategory, makeTransaction, makeRepository } from '../../helpers/factories'
 
 jest.mock('../../../src/config/database', () => ({
   AppDataSource: { getRepository: jest.fn() },
@@ -13,10 +14,14 @@ const USER_ID = 'user-uuid-1'
 describe('TransactionService', () => {
   let service: TransactionService
   let repo: ReturnType<typeof makeRepository>
+  let categoryRepo: ReturnType<typeof makeRepository>
 
   beforeEach(() => {
     repo = makeRepository()
-    ;(AppDataSource.getRepository as jest.Mock).mockReturnValue(repo)
+    categoryRepo = makeRepository()
+    ;(AppDataSource.getRepository as jest.Mock).mockImplementation((entity) => (
+      entity === Category ? categoryRepo : repo
+    ))
     service = new TransactionService()
   })
 
@@ -48,18 +53,30 @@ describe('TransactionService', () => {
       expect(result.type).toBe('expense')
     })
 
-    it('deve associar categoria se categoryId for fornecido', async () => {
+    it('deve associar categoria do proprio usuario', async () => {
       const input = { title: 'Mercado', amount: 300, type: 'expense' as const, date: '2024-01-10', categoryId: 'cat-uuid-1' }
       const transaction = makeTransaction({ ...input })
 
+      categoryRepo.findOneBy.mockResolvedValue(makeCategory({ id: 'cat-uuid-1', type: 'expense' }))
       repo.create.mockReturnValue(transaction)
       repo.save.mockResolvedValue(transaction)
 
       await service.create(USER_ID, input)
 
+      expect(categoryRepo.findOneBy).toHaveBeenCalledWith({ id: 'cat-uuid-1', userId: USER_ID })
       expect(repo.create).toHaveBeenCalledWith(
         expect.objectContaining({ categoryId: 'cat-uuid-1' })
       )
+    })
+
+    it('deve lancar 404 sem salvar quando a categoria nao pertence ao usuario', async () => {
+      categoryRepo.findOneBy.mockResolvedValue(null)
+
+      await expect(service.create(USER_ID, {
+        title: 'Mercado', amount: 300, type: 'expense', date: '2024-01-10', categoryId: 'cat-de-outro-usuario',
+      })).rejects.toMatchObject({ statusCode: 404, message: 'Categoria não encontrada' })
+
+      expect(repo.save).not.toHaveBeenCalled()
     })
 
     it('deve gerar transacoes mensais quando recorrente', async () => {
@@ -223,6 +240,29 @@ describe('TransactionService', () => {
 
       expect(repo.findOneBy).toHaveBeenCalledWith({ id: existing.id, userId: USER_ID })
       expect(repo.save).toHaveBeenCalled()
+      expect(categoryRepo.findOneBy).not.toHaveBeenCalled()
+    })
+
+    it('deve lancar 404 sem salvar ao mover para categoria de outro usuario', async () => {
+      repo.findOneBy.mockResolvedValue(makeTransaction({ type: 'expense', categoryId: 'cat-propria' }))
+      categoryRepo.findOneBy.mockResolvedValue(null)
+
+      await expect(service.update(USER_ID, 'transaction-uuid-1', { categoryId: 'cat-de-outro-usuario' }))
+        .rejects.toMatchObject({ statusCode: 404 })
+
+      expect(categoryRepo.findOneBy).toHaveBeenCalledWith({ id: 'cat-de-outro-usuario', userId: USER_ID })
+      expect(repo.save).not.toHaveBeenCalled()
+    })
+
+    it('deve permitir remover a categoria sem consultar categorias', async () => {
+      const existing = makeTransaction({ categoryId: 'cat-propria' })
+      repo.findOneBy.mockResolvedValue(existing)
+      repo.save.mockImplementation(async (data) => data)
+
+      const result = await service.update(USER_ID, existing.id, { categoryId: null })
+
+      expect(result.categoryId).toBeNull()
+      expect(categoryRepo.findOneBy).not.toHaveBeenCalled()
     })
 
     it('deve lançar AppError 404 se transação não pertencer ao usuário', async () => {

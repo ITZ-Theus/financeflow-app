@@ -1,5 +1,6 @@
 import { AppDataSource } from '../../config/database'
 import { Transaction } from './transaction.entity'
+import { Category } from '../categories/category.entity'
 import { AppError } from '../../shared/errors/AppError'
 import { getPaginationParams, PaginatedResult } from '../../shared/utils/pagination'
 import { isIsoDate } from '../../shared/validation/date'
@@ -120,6 +121,18 @@ export function countMonthlyOccurrences(startDate: string, endDate: string): num
 
 export class TransactionService {
   private repo = AppDataSource.getRepository(Transaction)
+  private categoryRepo = AppDataSource.getRepository(Category)
+
+  // A transaction may only reference a category owned by the same user and of the same type.
+  // Someone else's category answers 404, like any other resource the user does not own.
+  private async ensureCategoryAllowed(userId: string, categoryId: string, type: Transaction['type']) {
+    const category = await this.categoryRepo.findOneBy({ id: categoryId, userId })
+
+    if (!category) throw new AppError('Categoria não encontrada', 404)
+    if (category.type !== type) {
+      throw new AppError('Categoria incompativel com o tipo da transacao', 400)
+    }
+  }
 
   private buildFilteredQuery(userId: string, query: TransactionQuery = {}) {
     const qb = this.repo.createQueryBuilder('t')
@@ -226,6 +239,10 @@ export class TransactionService {
   }
 
   async create(userId: string, data: CreateTransactionDTO): Promise<Transaction> {
+    if (data.categoryId) {
+      await this.ensureCategoryAllowed(userId, data.categoryId, data.type)
+    }
+
     if (!data.isRecurring) {
       const transaction = this.repo.create({
         ...data,
@@ -284,6 +301,14 @@ export class TransactionService {
   async update(userId: string, id: string, data: Partial<CreateTransactionDTO>): Promise<Transaction> {
     const transaction = await this.repo.findOneBy({ id, userId })
     if (!transaction) throw new AppError('Transação não encontrada', 404)
+
+    // Re-check whenever the category or the type changes, since either can break the pairing.
+    const categoryId = data.categoryId !== undefined ? data.categoryId : transaction.categoryId
+    const type = data.type ?? transaction.type
+    if (categoryId && (data.categoryId !== undefined || data.type !== undefined)) {
+      await this.ensureCategoryAllowed(userId, categoryId, type)
+    }
+
     Object.assign(transaction, data)
     return this.repo.save(transaction)
   }
