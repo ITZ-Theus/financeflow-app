@@ -89,6 +89,7 @@ export function makeRepository() {
     create: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
+    update: jest.fn(),
     createQueryBuilder: jest.fn(),
   }
 }

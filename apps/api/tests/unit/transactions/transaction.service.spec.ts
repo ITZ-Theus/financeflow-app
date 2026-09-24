@@ -262,6 +262,7 @@ describe('TransactionService', () => {
         service.delete('outro-user-id', 'transaction-uuid-1')
       ).rejects.toBeInstanceOf(AppError)
 
+      expect(repo.findOneBy).toHaveBeenCalledWith({ id: 'transaction-uuid-1', userId: 'outro-user-id' })
       expect(repo.remove).not.toHaveBeenCalled()
     })
   })
