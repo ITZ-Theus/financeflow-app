@@ -7,30 +7,30 @@ import { User } from '../users/user.entity'
 @Entity('goals')
 export class Goal {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column()
-  title: string
+  title!: string
 
   @Column('decimal', { precision: 10, scale: 2 })
-  targetAmount: number
+  targetAmount!: number
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  currentAmount: number
+  currentAmount!: number
 
   @Column({ type: 'date' })
-  deadline: string
+  deadline!: string
 
   @Column({ type: 'enum', enum: ['active', 'completed', 'cancelled'], default: 'active' })
-  status: 'active' | 'completed' | 'cancelled'
+  status!: 'active' | 'completed' | 'cancelled'
 
   @Column()
-  userId: string
+  userId!: string
 
   @ManyToOne(() => User, u => u.goals)
   @JoinColumn({ name: 'userId' })
-  user: User
+  user!: User
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt!: Date
 }

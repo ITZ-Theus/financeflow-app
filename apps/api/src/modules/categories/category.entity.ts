@@ -7,27 +7,27 @@ import { User } from '../users/user.entity'
 @Entity('categories')
 export class Category {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column()
-  name: string
+  name!: string
 
   @Column({ default: '#3b82f6' })
-  color: string
+  color!: string
 
   @Column({ default: '🏷️' })
-  icon: string
+  icon!: string
 
   @Column({ type: 'enum', enum: ['income', 'expense'] })
-  type: 'income' | 'expense'
+  type!: 'income' | 'expense'
 
   @Column()
-  userId: string
+  userId!: string
 
   @ManyToOne(() => User, u => u.categories)
   @JoinColumn({ name: 'userId' })
-  user: User
+  user!: User
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt!: Date
 }
