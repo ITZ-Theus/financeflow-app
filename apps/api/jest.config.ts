@@ -5,6 +5,8 @@ const config: Config = {
   testEnvironment: 'node',
   rootDir: '.',
   testMatch: ['**/tests/**/*.spec.ts', '**/tests/**/*.test.ts'],
+  // tests/db needs PostgreSQL and runs through jest.db.config.ts (npm run test:db).
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/tests/db/'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }],
   },
