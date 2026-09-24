@@ -10,32 +10,32 @@ import { Budget } from '../budgets/budget.entity'
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column()
-  name: string
+  name!: string
 
   @Column({ unique: true })
-  email: string
+  email!: string
 
   @Column({ select: false })
-  password: string
+  password!: string
 
   @OneToMany(() => Transaction, t => t.user)
-  transactions: Transaction[]
+  transactions!: Transaction[]
 
   @OneToMany(() => Category, c => c.user)
-  categories: Category[]
+  categories!: Category[]
 
   @OneToMany(() => Goal, g => g.user)
-  goals: Goal[]
+  goals!: Goal[]
 
   @OneToMany(() => Budget, b => b.user)
-  budgets: Budget[]
+  budgets!: Budget[]
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn()
-  updatedAt: Date
+  updatedAt!: Date
 }

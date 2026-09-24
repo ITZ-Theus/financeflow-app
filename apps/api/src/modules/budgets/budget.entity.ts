@@ -10,34 +10,34 @@ import { Category } from '../categories/category.entity'
 @Index('IDX_budgets_user_category_month_year', ['userId', 'categoryId', 'month', 'year'], { unique: true })
 export class Budget {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('decimal', { precision: 10, scale: 2 })
-  amount: number
+  amount!: number
 
   @Column()
-  month: number
+  month!: number
 
   @Column()
-  year: number
+  year!: number
 
   @Column()
-  categoryId: string
+  categoryId!: string
 
   @Column()
-  userId: string
+  userId!: string
 
   @ManyToOne(() => User, u => u.budgets)
   @JoinColumn({ name: 'userId' })
-  user: User
+  user!: User
 
   @ManyToOne(() => Category, { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'categoryId' })
-  category: Category
+  category!: Category
 
   @CreateDateColumn()
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn()
-  updatedAt: Date
+  updatedAt!: Date
 }
