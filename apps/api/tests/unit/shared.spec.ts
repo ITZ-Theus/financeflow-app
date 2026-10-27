@@ -47,6 +47,10 @@ describe('getPaginationParams', () => {
     expect(result.page).toBe(1)
   })
 
+  it('deve garantir limit mínimo de 1', () => {
+    expect(getPaginationParams({ limit: '-5' }).limit).toBe(1)
+  })
+
   it('deve ignorar valores não numéricos e usar padrão', () => {
     const result = getPaginationParams({ page: 'abc', limit: 'xyz' })
     expect(result.page).toBe(1)

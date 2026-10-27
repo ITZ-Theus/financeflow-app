@@ -40,7 +40,7 @@ describe('Goal Routes - /api/goals', () => {
 
   it('PUT deve retornar 422 para deadline invalido sem consultar a meta', async () => {
     const res = await request(app)
-      .put('/api/goals/goal-uuid-1')
+      .put('/api/goals/9b2f1c4e-8a3d-4f6b-9c1e-2d7a5b8e4f10')
       .set('Authorization', `Bearer ${makeToken()}`)
       .send({ deadline: 'abc' })
 

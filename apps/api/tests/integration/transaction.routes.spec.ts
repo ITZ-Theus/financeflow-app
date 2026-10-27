@@ -80,7 +80,7 @@ describe('Transaction Routes - /api/transactions', () => {
       expect(res.status).toBe(200)
       expect(res.body).toHaveLength(2)
       expect(res.body[0]).toEqual({ month: 4, year: 2026, income: 5000, expense: 2400, balance: 2600 })
-      expect(MockedService.prototype.monthlyTrend).toHaveBeenCalledWith('user-uuid-1', expect.objectContaining({ months: '2' }))
+      expect(MockedService.prototype.monthlyTrend).toHaveBeenCalledWith('user-uuid-1', expect.objectContaining({ months: 2 }))
     })
   })
 
@@ -227,7 +227,7 @@ describe('Transaction Routes - /api/transactions', () => {
   describe('PUT /api/transactions/:id', () => {
     it('deve retornar 422 para recurrenceEndDate invalida sem chamar o service', async () => {
       const res = await request(app)
-        .put('/api/transactions/uuid-1')
+        .put('/api/transactions/9b2f1c4e-8a3d-4f6b-9c1e-2d7a5b8e4f10')
         .set('Authorization', `Bearer ${makeToken()}`)
         .send({ recurrenceEndDate: 'abc' })
 
@@ -241,7 +241,7 @@ describe('Transaction Routes - /api/transactions', () => {
       MockedService.prototype.delete.mockResolvedValue(undefined)
 
       const res = await request(app)
-        .delete('/api/transactions/uuid-1')
+        .delete('/api/transactions/9b2f1c4e-8a3d-4f6b-9c1e-2d7a5b8e4f10')
         .set('Authorization', `Bearer ${makeToken()}`)
 
       expect(res.status).toBe(204)
@@ -254,7 +254,7 @@ describe('Transaction Routes - /api/transactions', () => {
       )
 
       const res = await request(app)
-        .delete('/api/transactions/id-invalido')
+        .delete('/api/transactions/00000000-0000-4000-8000-000000000000')
         .set('Authorization', `Bearer ${makeToken()}`)
 
       expect(res.status).toBe(404)

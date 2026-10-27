@@ -2,7 +2,7 @@ import { AppDataSource } from '../../config/database'
 import { Transaction } from './transaction.entity'
 import { Category } from '../categories/category.entity'
 import { AppError } from '../../shared/errors/AppError'
-import { getPaginationParams, PaginatedResult } from '../../shared/utils/pagination'
+import { getPaginationParams, PaginatedResult, PaginationQuery } from '../../shared/utils/pagination'
 import { isIsoDate } from '../../shared/validation/date'
 
 interface CreateTransactionDTO {
@@ -24,6 +24,8 @@ type TransactionQuery = {
   categoryId?: string
 }
 
+type TransactionListQuery = TransactionQuery & PaginationQuery
+
 export interface MonthlyTrendItem {
   month: number
   year: number
@@ -32,7 +34,7 @@ export interface MonthlyTrendItem {
   balance: number
 }
 
-function getMonthRange(query: any) {
+function getMonthRange(query: Pick<TransactionQuery, 'month' | 'year'>) {
   const month = Number(query.month)
   const year = Number(query.year)
 
@@ -149,7 +151,7 @@ export class TransactionService {
     return qb
   }
 
-  async findAll(userId: string, query: any): Promise<PaginatedResult<Transaction>> {
+  async findAll(userId: string, query: TransactionListQuery = {}): Promise<PaginatedResult<Transaction>> {
     const { page, limit } = getPaginationParams(query)
     const qb = this.buildFilteredQuery(userId, query)
 
@@ -158,7 +160,7 @@ export class TransactionService {
     return { data, total, page, totalPages: Math.ceil(total / limit) }
   }
 
-  async summary(userId: string, query: any) {
+  async summary(userId: string, query: TransactionQuery = {}) {
     const qb = this.buildFilteredQuery(userId, query)
 
     const transactions = await qb.getMany()

@@ -3,13 +3,12 @@ import { z } from 'zod'
 import { TransactionService } from './transaction.service'
 import { authMiddleware, AuthRequest } from '../auth/auth.middleware'
 import { isoDateSchema } from '../../shared/validation/date'
-
-// Largest value that fits the numeric(10,2) column.
-const MAX_AMOUNT = 99_999_999.99
+import { validateIdParam } from '../../shared/validation/id'
+import { MAX_MONEY_AMOUNT } from '../../shared/validation/money'
 
 const createSchema = z.object({
   title: z.string().min(1),
-  amount: z.number().positive().max(MAX_AMOUNT),
+  amount: z.number().positive().max(MAX_MONEY_AMOUNT),
   type: z.enum(['income', 'expense']),
   date: isoDateSchema,
   description: z.string().optional(),
@@ -17,6 +16,20 @@ const createSchema = z.object({
   isRecurring: z.boolean().optional(),
   recurrenceInterval: z.literal('monthly').nullable().optional(),
   recurrenceEndDate: isoDateSchema.nullable().optional(),
+})
+
+// Filters shared by the list, summary and CSV export. `limit` above 100 is clamped by getPaginationParams.
+const filterQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).optional(),
+  month: z.coerce.number().int().min(1).max(12).optional(),
+  year: z.coerce.number().int().min(2000).max(2100).optional(),
+  type: z.enum(['income', 'expense']).optional(),
+  categoryId: z.string().uuid().optional(),
+})
+
+const trendQuerySchema = z.object({
+  months: z.coerce.number().int().min(1).max(12).optional(),
 })
 
 type CreateTransactionInput = {
@@ -35,22 +48,22 @@ class TransactionController {
   private service = new TransactionService()
 
   async index(req: AuthRequest, res: Response) {
-    const result = await this.service.findAll(req.userId!, req.query)
+    const result = await this.service.findAll(req.userId!, filterQuerySchema.parse(req.query))
     return res.json(result)
   }
 
   async summary(req: AuthRequest, res: Response) {
-    const result = await this.service.summary(req.userId!, req.query)
+    const result = await this.service.summary(req.userId!, filterQuerySchema.parse(req.query))
     return res.json(result)
   }
 
   async trend(req: AuthRequest, res: Response) {
-    const result = await this.service.monthlyTrend(req.userId!, req.query)
+    const result = await this.service.monthlyTrend(req.userId!, trendQuerySchema.parse(req.query))
     return res.json(result)
   }
 
   async export(req: AuthRequest, res: Response) {
-    const csv = await this.service.exportCsv(req.userId!, req.query)
+    const csv = await this.service.exportCsv(req.userId!, filterQuerySchema.parse(req.query))
     const timestamp = new Date().toISOString().slice(0, 10)
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8')
@@ -80,6 +93,7 @@ const router = Router()
 const controller = new TransactionController()
 
 router.use(authMiddleware)
+router.param('id', validateIdParam)
 router.get('/', (req, res) => controller.index(req as AuthRequest, res))
 router.get('/summary', (req, res) => controller.summary(req as AuthRequest, res))
 router.get('/trend', (req, res) => controller.trend(req as AuthRequest, res))
