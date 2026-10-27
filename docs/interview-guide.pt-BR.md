@@ -34,7 +34,7 @@ Boa explicacao:
 
 Frase boa:
 
-> Eu uso JWT para manter a API stateless. A API nao precisa guardar sessao em memoria, e cada request protegido carrega as credenciais no header.
+> O token e JWT, entao a API nao guarda sessao em memoria e cada request carrega as credenciais no header. Mas o middleware ainda faz uma consulta por request para confirmar que o usuario existe: e um tradeoff consciente, porque assim o token de um usuario apagado para de funcionar na hora. O que ainda falta e revogacao e um tempo de vida menor (hoje sao 7 dias, guardado no localStorage).
 
 ## Fluxo Para Explicar Criacao De Transacao
 
@@ -66,7 +66,9 @@ Frase boa:
 - Migrations versionadas com TypeORM.
 - Docker Compose para ambiente local.
 - CI rodando build e testes.
-- Testes unitarios e de integracao na API.
+- TypeScript em modo strict na API e no Web.
+- Testes unitarios, de HTTP e contra PostgreSQL real na API, incluindo uma matriz de isolamento entre dois usuarios.
+- Validacao na borda: entrada invalida recebe 4xx, nunca 500.
 - Testes de frontend com Vitest e Testing Library.
 - Teste E2E com Playwright cobrindo login demo, categoria, ciclo de transacao e orcamentos.
 - Orcamentos mensais por categoria com calculo de uso, restante e status.
@@ -103,7 +105,7 @@ Frase boa:
 
 ### Como voce protege dados de um usuario?
 
-> As rotas protegidas extraem o `userId` do JWT, e as consultas filtram pelo usuario autenticado. Assim um usuario nao consegue listar, editar ou excluir dados de outro.
+> As rotas protegidas extraem o `userId` do JWT e toda consulta filtra pelo usuario autenticado. Recurso de outro usuario responde 404, e nao 403, para nao revelar que o id existe. Mas filtrar as consultas nao basta: eu encontrei um caso em que a transacao aceitava o `categoryId` de outro usuario, porque a FK so verifica se a categoria existe. Hoje o service confere o dono da categoria referenciada, e uma suite contra PostgreSQL real testa o isolamento entre dois usuarios nos dois sentidos.
 
 ### Como voce debuga erro em producao?
 
@@ -111,15 +113,59 @@ Frase boa:
 
 ### Como funciona a tendencia mensal?
 
-> A API busca as transacoes do usuario em uma janela limitada de meses e agrega entradas, saidas e saldo por periodo. Eu deixei essa regra no service porque ela e uma regra de leitura do dominio financeiro, enquanto o frontend so consome o endpoint e renderiza o grafico.
+> A API busca as transacoes do usuario em uma janela de ate 12 meses e agrega entradas, saidas e saldo por mes. Hoje essa soma e feita em JavaScript, depois de carregar as linhas. Funciona no volume atual, mas o proximo passo e fazer a agregacao no SQL com `SUM ... GROUP BY` e criar um indice em `(userId, date)`, medindo antes e depois com `EXPLAIN ANALYZE`.
 
 ### Como funciona CORS no projeto?
 
-> A API aceita a origem configurada em `WEB_URL`. Em producao esse valor aponta para a URL da Vercel. Isso evita liberar qualquer origem por padrao.
+> A API aceita a origem configurada em `WEB_URL`, que em producao aponta para a URL da Vercel. Tem um ponto fraco que eu conheco: se `WEB_URL` estiver vazia em producao, a API libera qualquer origem. O impacto e limitado porque o token vai no header e nao em cookie, mas o certo e a API se recusar a subir sem essa variavel, e isso esta no backlog.
 
 ### O que voce melhoraria?
 
-> Eu expandiria os testes E2E para cobrir metas. Tambem adicionaria Sentry, mais opcoes de recorrencia alem da mensal e alertas quando um orcamento estiver perto do limite.
+> A proxima etapa e banco de dados: hoje os resumos e relatorios carregam as linhas e somam em JavaScript, o calculo de orcamento faz uma consulta por orcamento (N+1) e as consultas principais nao tem indice. Eu faria a agregacao no SQL, criaria os indices e mediria com `EXPLAIN ANALYZE`. Depois, decidir onde o token fica: cookie httpOnly com token curto ou bearer com tempo de vida menor e CSP. A lista completa esta em `docs/backlog.md`.
+
+## Bugs Reais Que Eu Encontrei E Corrigi (Sprint 1)
+
+Use estas historias quando perguntarem de um bug dificil, de seguranca ou de testes. Cada uma tem sintoma, causa, correcao e como eu provei.
+
+### Uma requisicao travava a API inteira
+
+- **Sintoma:** `POST /transactions` com `recurrenceEndDate: "abc"` demorava 9,5 s, e o `/health` tambem ficava parado durante esse tempo.
+- **Causa:** a validacao comparava as datas como texto. `"abc" < "2026-01-01"` e falso, entao a data invalida passava, e o calculo de ocorrencias avancava mes a mes num laco sincrono ate o ano 275760. Como o Node tem uma thread so, todas as outras requisicoes esperavam.
+- **Correcao:** validacao de data real na borda (zod), checagem defensiva no service e o numero de meses calculado por formula, sem laco. Comparei a formula nova com a antiga em 492 mil pares de datas para garantir que o comportamento nao mudou.
+- **Licao:** em Node, um laco sincrono sem limite e uma negacao de servico. E a conta demo publica deixava qualquer visitante fazer isso.
+
+### Um usuario conseguia ver a categoria de outro (BOLA)
+
+- **Sintoma:** criar uma transacao com o `categoryId` de outro usuario funcionava, e a listagem devolvia nome, cor e dono da categoria alheia.
+- **Causa:** a FK so garante que a categoria existe, nao de quem ela e. As consultas eram filtradas por usuario, mas a referencia entre recursos nao.
+- **Correcao:** o service confere o dono e o tipo da categoria antes de gravar.
+- **Prova:** escrevi primeiro uma matriz com dois usuarios contra PostgreSQL real. Dos 24 casos, so os de referencia falharam (6, nos dois sentidos), o que confirmou o bug exato. Depois da correcao, passaram todos.
+
+### Meta concluida sozinha por causa de string
+
+- **Sintoma:** editar so o titulo de uma meta a 3.850 de 12.000 marcava ela como concluida.
+- **Causa:** o driver do PostgreSQL devolve `numeric` como string, e `"3850.00" >= "12000.00"` e verdadeiro como texto. O tipo dizia `number`, mas era mentira em runtime.
+- **Correcao:** um transformer na coluna converte para numero na leitura. A decisao e os limites estao no ADR 0001.
+- **Licao:** o teste unitario dessa regra passava porque o mock usava numeros. So o teste contra o banco real reproduziu o bug.
+
+### Ligar o strict quebrou a API sem quebrar nenhum teste
+
+- **Sintoma:** com `strict: true`, o build passava e os 156 testes passavam, mas a API nao subia.
+- **Causa:** com `strictNullChecks`, o TypeScript grava `string | null` nos metadados como `Object`, e o TypeORM usa esses metadados para descobrir o tipo das colunas sem tipo declarado.
+- **Correcao:** declarar o tipo explicito nessas quatro colunas, igual ao do banco.
+- **Licao:** foi o melhor argumento para ter testes contra PostgreSQL real. Testei depois: com o bug de volta, os testes com mock passam e a suite com banco falha na hora.
+
+### Testes que testavam uma copia do codigo
+
+- **Sintoma:** os testes de categoria e meta passavam, mas o codigo de producao tinha um bug que o teste nao pegava.
+- **Causa:** o arquivo de teste declarava a propria versao dos services, e essa copia tinha uma correcao que o codigo real nao tinha.
+- **Correcao:** extrair os services para arquivos proprios e testar o codigo real. Para provar que os testes novos exercitam a producao, quebrei o codigo de proposito e conferi que algum teste falhava.
+
+### Toda entrada invalida virava 500
+
+- **Sintoma:** 17 de 17 requisicoes malformadas (id que nao e UUID, data impossivel, JSON quebrado, `limit=-5`) respondiam 500.
+- **Correcao:** validacao com zod do corpo, da query e do `:id`, mais um mapeamento de erros no `errorHandler`. As regras de status estao no ADR 0002 (por exemplo, 404 e nao 403 para dado de outro usuario).
+- **Prova:** uma tabela de testes contra o banco real com essas requisicoes, que falhava antes e passa depois.
 
 ## Como Fazer Uma Demo Em 5 Minutos
 
@@ -151,6 +197,7 @@ Use esta estrutura:
 - [ ] Explicar migrations.
 - [ ] Explicar CORS e variaveis de ambiente.
 - [ ] Explicar CI.
-- [ ] Explicar testes da API.
+- [ ] Explicar testes da API: o que cada camada prova (unit, HTTP, PostgreSQL) e por que os mocks nao bastavam.
+- [ ] Contar pelo menos duas historias da secao de bugs reais sem olhar.
 - [ ] Explicar testes do frontend.
 - [ ] Falar 3 melhorias futuras com tradeoffs.

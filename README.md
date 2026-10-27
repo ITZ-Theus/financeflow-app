@@ -25,17 +25,19 @@ The project was built as a portfolio-grade application, with a typed React front
 - Premium dark UI with hover interactions and responsive layout
 - Docker Compose environment with PostgreSQL, API and Web services
 - TypeORM migrations for versioned database schema changes
+- Per-user data isolation, verified by a two-user test matrix against PostgreSQL
+- Input validation at the API boundary: invalid input gets 4xx, never 500
 - API security hardening with Helmet, auth rate limiting and request IDs
 - Structured API logging with request duration, status and correlation ids
-- Unit, integration, frontend and E2E tests
-- GitHub Actions CI for build and test validation
+- Unit, HTTP, PostgreSQL integration, frontend and E2E tests
+- GitHub Actions CI with a PostgreSQL service container
 
 ## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
 | Frontend | React, Vite, TypeScript, React Router, React Query, Zustand, Recharts, Tailwind CSS |
-| Backend | Node.js, Express, TypeScript, TypeORM, Zod, JWT, bcrypt, Pino |
+| Backend | Node.js, Express, TypeScript (strict), TypeORM, Zod, JWT, bcrypt, Pino |
 | Database | PostgreSQL |
 | Testing | Jest, ts-jest, Supertest, Vitest, Testing Library, Playwright |
 | Infrastructure | Docker, Docker Compose, GitHub Actions |
@@ -48,9 +50,12 @@ financeflow/
     api/                  # Express API, TypeORM entities, services, tests
       src/
         config/           # Environment and database configuration
-        modules/          # Auth, transactions, categories, budgets, goals and users
-        shared/           # Shared errors and utilities
-      tests/              # Unit and integration tests
+        modules/          # Auth, transactions, categories, budgets, goals, reports and users
+        shared/           # Errors, validation, logging, middlewares and utilities
+      tests/
+        unit/             # Services and helpers, database mocked
+        integration/      # HTTP layer through the real Express app, services mocked
+        db/               # Real app against a real PostgreSQL database
     web/                  # React application
       src/
         components/       # Layout and reusable UI pieces
@@ -59,12 +64,17 @@ financeflow/
         services/         # Axios API client
         store/            # Zustand auth store
         types/            # Shared frontend types
+  docs/                   # Architecture, decision records and backlog
+  tests/e2e/              # Playwright browser tests
   docker-compose.yml      # Local PostgreSQL, API and Web orchestration
 ```
 
 ## Technical Documentation
 
 - [Architecture overview](docs/architecture.md)
+- [ADR 0001: money as numeric, read as number](docs/adr/0001-money-numeric-transformer.md)
+- [ADR 0002: HTTP status codes for errors](docs/adr/0002-error-status-codes.md)
+- [Engineering backlog](docs/backlog.md): known issues and planned work
 - [Interview guide, Portuguese](docs/interview-guide.pt-BR.md)
 
 ## Core Features
@@ -91,7 +101,7 @@ financeflow/
 
 - Create and manage income or expense categories
 - Custom color and icon support
-- User-scoped category ownership
+- User-scoped category ownership: transactions and budgets can only use the user's own categories, and a transaction's category must match its type
 
 ### Budgets
 
@@ -138,6 +148,7 @@ Local:      http://localhost:3333/api
 | --- | --- | --- |
 | `POST` | `/auth/register` | Create an account |
 | `POST` | `/auth/login` | Authenticate a user |
+| `POST` | `/auth/demo-login` | Authenticate as the shared demo account (seeds it if missing) |
 | `GET` | `/transactions` | List authenticated user's transactions |
 | `GET` | `/transactions/summary` | Get monthly financial summary |
 | `GET` | `/transactions/trend` | Get monthly income, expense and balance trend |
@@ -160,6 +171,21 @@ Local:      http://localhost:3333/api
 | `DELETE` | `/goals/:id` | Delete a goal |
 | `GET` | `/health` | API health check |
 | `GET` | `/version` | API build and version metadata |
+| `GET` | `/reports/financial` | Period report: totals, monthly trend, categories, top transactions |
+
+Money fields are returned as numbers. Errors share one shape, `{ message, requestId, errors? }`:
+
+| Status | Meaning |
+| --- | --- |
+| `422` | The body, query string or `:id` does not match the schema (`errors` lists the fields) |
+| `400` | A business rule rejected the request, or the JSON is malformed |
+| `401` | Missing, invalid or expired token |
+| `404` | Not found, or it belongs to another user (the API never reveals which) |
+| `413` | Body larger than `BODY_LIMIT` |
+| `429` | Too many authentication attempts |
+| `500` | Unexpected error, logged with the request id |
+
+Details in [ADR 0002](docs/adr/0002-error-status-codes.md).
 
 ## Getting Started
 
@@ -269,7 +295,8 @@ npm run build:api     # Compile the API
 npm run build:web     # Build the frontend
 npm run migration:run # Run pending API database migrations
 npm run seed:demo     # Create or refresh the demo account data
-npm test              # Run API tests
+npm test              # Run API unit and HTTP tests (no database needed)
+npm run test:db       # Run API tests against a real PostgreSQL database
 npm run test:web      # Run frontend tests
 npm run test:e2e      # Run Playwright E2E tests against a running local stack
 ```
@@ -325,29 +352,35 @@ For hosted demo environments, set `DEMO_SEED_ON_STARTUP=true` in the API service
 
 ## Testing
 
-The API test suite covers authentication, shared utilities, transaction business rules, monthly trend aggregation, category budget calculations, category and goal behavior, and route-level integration flows. The Web test suite covers UI helpers, user-facing error messages, category icon rendering and toast notifications. The Playwright E2E suite validates real browser journeys with the demo account.
+| Layer | Command | What it covers |
+| --- | --- | --- |
+| API unit | `npm test` | Business rules of the real services, validators, money transformer, error handler (database mocked) |
+| API HTTP | `npm test` | Routing, authentication, validation and status codes through the real Express app (services mocked) |
+| API + PostgreSQL | `npm run test:db` | The real app and migrations against PostgreSQL: user isolation in both directions, money round-trips, invalid input never returning 500 |
+| Web | `npm run test:web` | Formatting, error messages, API URL resolution, toast and icon components |
+| E2E | `npm run test:e2e` | Demo login, creating a category, transaction create/edit/delete and budget create/delete in a real browser |
 
-Current suites:
+At the end of Sprint 1: API 179 tests (136 unit, 43 HTTP), PostgreSQL 63, web 15, E2E 3 specs.
 
-```txt
-API: 10 test suites, 92 tests
-Web: 5 test files, 15 tests
-E2E: demo login, category management, transaction lifecycle and budget flows
-```
-
-Run all API tests:
-
-```bash
-npm test
-```
-
-Run Web tests:
+`npm run test:db` needs a reachable PostgreSQL. It creates and recreates a `financeflow_test`
+database on every run (it refuses any database whose name does not end in `_test`) and reads the
+connection from `DB_HOST`, `DB_PORT`, `DB_USER` and `DB_PASS` (defaults: `localhost:5432`,
+`financeflow` / `financeflow123`). From the host, with the Compose database on port 5433:
 
 ```bash
-npm run test:web
+DB_PORT=5433 npm run test:db
 ```
 
-Run E2E tests after starting the local stack:
+Without Node.js on the host, run the suites inside the containers:
+
+```bash
+docker compose up -d --build postgres api web
+docker compose exec api npm test
+docker compose exec api npm run test:db
+docker compose exec web npm test
+```
+
+E2E tests need the local stack running:
 
 ```bash
 docker compose up -d --build postgres api web
@@ -356,18 +389,18 @@ npm run test:e2e
 
 ## CI
 
-GitHub Actions validates the project on pushes and pull requests to `main` and `develop`:
+GitHub Actions runs on pushes and pull requests to `main` and `develop`:
 
-- install dependencies
-- build the API
-- build the Web app
-- run API tests
-- run Web tests
+- **Build and Test**: install, build API and web, run API unit/HTTP tests and web tests.
+- **API Database Tests**: run `npm run test:db` against a `postgres:16-alpine` service container.
 
-The repository also includes a Playwright E2E workflow that runs on pull requests and can be triggered manually from GitHub Actions.
+A separate Playwright workflow runs the E2E tests against the Docker Compose stack on pull requests
+and on demand.
 
 ## Security And Observability
 
+- Every query on user data is scoped to the authenticated user; other users' ids answer 404.
+- Request bodies, query strings and route ids are validated with Zod before reaching the database.
 - Helmet adds baseline HTTP security headers.
 - Authentication routes use rate limiting to reduce brute-force risk.
 - Every response receives an `X-Request-Id` header for easier debugging across Render logs, browser errors and API responses.
@@ -440,8 +473,9 @@ The web app includes `apps/web/vercel.json` to redirect client-side routes back 
 
 ## Roadmap
 
-- Add observability and production error tracking
-- Expand recurrence options beyond monthly transactions
+Next is database work: indexes on the hot query paths, aggregations in SQL instead of JavaScript,
+removing the budget N+1, transactions for multi-step writes and stricter constraints. The full list,
+including open security items, is in the [engineering backlog](docs/backlog.md).
 
 ## Author
 

@@ -46,31 +46,20 @@ Se o nome da pasta local for diferente, tudo bem. Os comandos abaixo assumem que
 
 ## Ultimos Commits Importantes
 
-Referencias recentes do historico:
+Sprint 1 (setembro/2026), uma tarefa por PR:
 
 ```txt
-6da9dac fix: replace budget donut with usage meter
-d443b08 fix: improve budget usage chart rendering
-532fa6c feat: enrich demo account seed data
-42a109b test: add budget e2e flow
-e9d76a3 fix: allow local cors origins in development
-4627ad8 fix: prevent docker internal api url leaking to browser
-a2e1cb2 fix: prevent cached authenticated api responses
-904b88c test: add transaction e2e flow
-dae0de3 feat: add dashboard financial insights
-fe6c773 feat: add monthly financial trend
+PR #1  fix(api): validate recurrence dates and prevent runaway loops
+PR #2  chore(api): enable TypeScript strict mode
+PR #3  refactor(api): extract category and goal services and test the real code
+PR #4  test(api): run integration tests against a real PostgreSQL database
+PR #5  fix(api): reject transactions that reference another user's category
+PR #6  fix(api): return numeric money columns as numbers
+T7     fix(api): answer invalid input with 4xx instead of 500   (branch fix/invalid-input-4xx)
+T8     docs: Sprint 1 documentation                             (branch docs/sprint-1-docs)
 ```
 
-O commit `532fa6c` e especialmente importante porque enriquece o seed da conta demo com:
-
-- categorias em PT-BR;
-- transacoes do mes atual;
-- historico dos ultimos 6 meses;
-- orcamentos do mes atual;
-- metas realistas;
-- uma categoria de orcamento em estado de atencao.
-
-O commit `6da9dac` troca o grafico circular bugado de orcamento por um medidor horizontal.
+O que cada uma resolveu e as historias para entrevista estao em `docs/interview-guide.pt-BR.md`. O que ficou para depois esta em `docs/backlog.md`.
 
 ## Variaveis De Ambiente
 
@@ -180,8 +169,25 @@ API:
 
 ```bash
 npm run build:api
-npm test
+npm test          # unit + HTTP, sem banco
+npm run test:db   # contra PostgreSQL real (cria e recria o banco financeflow_test)
 ```
+
+Do host, com o Postgres do Compose na porta 5433:
+
+```bash
+DB_PORT=5433 npm run test:db
+```
+
+Sem Node no host, rodar dentro dos containers:
+
+```bash
+docker compose exec api npm test
+docker compose exec api npm run test:db
+docker compose exec web npm test
+```
+
+Nao interromper o `test:db` no meio: um processo orfao continua usando o `financeflow_test` e atrapalha a proxima execucao (conferir com `docker compose exec api ps`).
 
 Web:
 
@@ -207,11 +213,14 @@ docker run --rm -e E2E_BASE_URL=http://host.docker.internal:5173 -v ${PWD}:/repo
 
 ### Fluxo normal
 
-1. Fazer commit na `main`.
-2. Dar `git push`.
-3. CI do GitHub Actions deve ficar verde.
-4. Vercel faz deploy do Web automaticamente.
-5. Render faz deploy da API automaticamente se auto deploy estiver ativo. Se nao estiver, usar Manual Deploy.
+1. Criar um branch a partir da `main` atualizada (uma tarefa por branch).
+2. Commitar, dar `git push -u origin <branch>` e abrir um PR.
+3. Esperar o CI ficar verde (Build and Test + API Database Tests).
+4. Fazer o merge na `main`.
+5. Vercel faz deploy do Web automaticamente.
+6. Render faz deploy da API automaticamente se auto deploy estiver ativo. Se nao estiver, usar Manual Deploy.
+
+Se a mudanca alterar o formato de uma resposta da API, subir a API antes do Web (ou os dois juntos).
 
 ### Conferir CI
 
@@ -223,34 +232,7 @@ Repository > Actions > CI
 
 ### Conferir Vercel
 
-O deploy do Web precisa estar no commit mais recente. Para o grafico novo, conferir se a Vercel pegou:
-
-```txt
-6da9dac fix: replace budget donut with usage meter
-```
-
-Se em producao ainda aparecer o donut antigo, a Vercel nao esta no ultimo commit ou o navegador esta com cache.
-
-### Conferir Render
-
-No Render:
-
-```txt
-financeflow-api > Events
-financeflow-api > Logs
-```
-
-Para atualizar a conta demo de producao:
-
-1. Confirmar `DEMO_SEED_ON_STARTUP=true`.
-2. Rodar `Manual Deploy > Deploy latest commit`.
-3. Nos logs, procurar:
-
-```txt
-demo account ready
-```
-
-Se a dashboard de producao ainda mostrar maio/2026 zerado e categorias antigas em ingles, o seed novo ainda nao rodou no Neon.
+O deploy do Web precisa estar no commit mais recente da `main`. Se a tela em producao nao mostrar uma mudanca recente, a Vercel nao pegou o ultimo commit ou o navegador esta com cache.
 
 ## Diagnostico Rapido De Producao
 
@@ -342,24 +324,19 @@ Docs:
 
 ## Pendencias Imediatas
 
-1. Confirmar se Render API esta com `DEMO_SEED_ON_STARTUP=true`.
-2. Rodar redeploy da API no Render para recriar dados demo no Neon.
-3. Confirmar se Vercel Web esta no commit `6da9dac` ou mais recente.
-4. Validar em producao:
-   - conta demo entra;
-   - dashboard mostra dados do mes atual;
-   - tendencia mostra 6 meses;
-   - grafico de orcamento aparece como medidor horizontal;
-   - categorias aparecem em PT-BR.
+1. Push, PR e merge da T7 (`fix/invalid-input-4xx`).
+2. PR da T8 (`docs/sprint-1-docs`), depois do merge da T7: o branch foi criado em cima dela.
+3. Apagar os branches ja mergeados (T1 a T6), local e no GitHub.
+4. Comecar a Sprint 2 (banco de dados): ver `docs/backlog.md`.
 
-## Proximos Passos De Produto
+## Proximos Passos
 
-Sugestoes de roadmap para deixar com ainda mais cara de projeto senior:
+A lista priorizada esta em `docs/backlog.md`. Em resumo:
 
-1. Melhorar metas com historico de contribuicoes.
-2. Adicionar testes E2E para metas e relatorios.
-3. Adicionar Sentry ou ferramenta similar de error tracking.
-4. Criar portfolio pessoal e linkar o FinanceFlow como case principal.
+1. Sprint 2, banco de dados: indices, agregacoes em SQL, N+1 dos orcamentos, transacoes e constraints.
+2. Seguranca: onde guardar o token, CORS com `WEB_URL` vazia, TLS do banco.
+3. Testes: matriz de isolamento para orcamentos e metas, E2E sem a conta demo compartilhada.
+4. Infra: lint, CD condicionado ao CI, imagem Docker de producao mais enxuta.
 
 ## Como Explicar Em Entrevista
 
@@ -370,6 +347,8 @@ Pitch curto:
 Pontos tecnicos para destacar:
 
 - separacao entre rota HTTP e regra de negocio em service;
+- isolamento entre usuarios testado contra PostgreSQL real;
+- validacao na borda (entrada invalida nunca vira 500);
 - uso de migrations em vez de synchronize;
 - escopo por usuario via JWT;
 - React Query para server state;
@@ -396,6 +375,7 @@ Checklist:
 [ ] Rodar npm run build:api
 [ ] Rodar npm run build:web
 [ ] Rodar npm test
+[ ] Rodar DB_PORT=5433 npm run test:db
 [ ] Rodar npm run test:web
 ```
 
